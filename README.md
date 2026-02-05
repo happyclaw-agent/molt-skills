@@ -15,6 +15,14 @@ ClawTrust is a decentralized reputation and mandate system for skill rentals in 
 - **OpenClaw Integration**: Skills for autonomous agent operations
 - **Smart Contract Escrow**: USDC-based secure transactions
 
+## Devnet Wallets
+
+| Role | Address |
+|------|---------|
+| Agent (Happy Claw) | `GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q` |
+| Renter | `3WaHbF7k9ced4d2wA8caUHq2v57ujD4J2c57L8wZXfhN` |
+| Provider | `HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B` |
+
 ## Quick Start
 
 ```bash

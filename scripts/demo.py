@@ -30,16 +30,34 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from clawtrust.sdk.client import SolanaClient
 from clawtrust.sdk.identity import AgentIdentity
-from clawtrust.sdk.reputation import ReputationEngine
+from clawtrust.sdk.reputation import ReputationEngine, Review
 
 
-# ============ Demo Skills (Hardcoded for MVP) ============
+# ============ Devnet Wallets ============
+
+WALLETS = {
+    "agent": {
+        "address": "GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q",
+        "name": "Happy Claw (Agent)",
+    },
+    "renter": {
+        "address": "3WaHbF7k9ced4d2wA8caUHq2v57ujD4J2c57L8wZXfhN",
+        "name": "Renter Agent",
+    },
+    "provider": {
+        "address": "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
+        "name": "Provider Agent",
+    },
+}
+
+# ============ Demo Skills (Real Wallet Addresses) ============
 
 DEMO_SKILLS = [
     {
         "id": "image-generation",
         "name": "Image Generation",
-        "provider": "happyclaw-agent",
+        "provider": WALLETS["agent"]["address"],
+        "provider_name": WALLETS["agent"]["name"],
         "price_usdc": 0.01,
         "description": "Generate images from text prompts using SDXL",
         "capabilities": ["text-to-image", "style-transfer", "inpainting"],
@@ -47,7 +65,8 @@ DEMO_SKILLS = [
     {
         "id": "code-review",
         "name": "Code Review",
-        "provider": "agent-alpha",
+        "provider": WALLETS["provider"]["address"],
+        "provider_name": WALLETS["provider"]["name"],
         "price_usdc": 0.05,
         "description": "Automated code review with security checks",
         "capabilities": ["security-scan", "bug-detection", "style-check"],
@@ -55,7 +74,8 @@ DEMO_SKILLS = [
     {
         "id": "data-analysis",
         "name": "Data Analysis",
-        "provider": "agent-beta",
+        "provider": WALLETS["provider"]["address"],
+        "provider_name": WALLETS["provider"]["name"],
         "price_usdc": 0.02,
         "description": "Statistical analysis and visualization",
         "capabilities": ["regression", "clustering", "charts"],
@@ -228,21 +248,21 @@ class ClawTrustDemo:
         self.log("STEP 5: Reputation Update")
         self.log("=" * 50)
         
-        # Calculate new reputation
-        review = {
-            "provider": mandate["provider"],
-            "renter": self.identity.name,
-            "skill": mandate["skill_name"],
-            "rating": 5,  # 1-5 stars
-            "completed_on_time": True,
-            "output_quality": "excellent",
-            "comment": "Fast delivery, great quality!",
-        }
+        # Create review using Review dataclass
+        review = Review(
+            provider=mandate["provider"],
+            renter=self.identity.name,
+            skill=mandate["skill_name"],
+            rating=5,  # 1-5 stars
+            completed_on_time=True,
+            output_quality="excellent",
+            comment="Fast delivery, great quality!",
+        )
         
-        self.log(f"Review from @{review['renter']} for @{review['provider']}:")
-        self.log(f"  ⭐ Rating: {'⭐' * review['rating']}")
-        self.log(f"  ✅ On-time: {review['completed_on_time']}")
-        self.log(f"  💬 \"{review['comment']}\"")
+        self.log(f"Review from @{review.renter} for @{review.provider}:")
+        self.log(f"  ⭐ Rating: {'⭐' * review.rating}")
+        self.log(f"  ✅ On-time: {review.completed_on_time}")
+        self.log(f"  💬 \"{review.comment}\"")
         
         # Update reputation score
         new_score = self.reputation.add_review(
