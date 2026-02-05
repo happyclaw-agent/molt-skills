@@ -1,7 +1,24 @@
 """
 Agent Identity Management
 
-Provides wallet-based identity for ClawTrust agents.
+Purpose:
+    Provides wallet-based identity management for ClawTrust agents.
+    Each agent is identified by their Solana wallet address.
+    
+Capabilities:
+    - Create and register agent identities
+    - Query identities by ID, wallet, or name
+    - Track reputation and rental history
+    - Update identity metadata
+    
+Usage:
+    >>> manager = IdentityManager()
+    >>> identity = manager.get_by_wallet("wallet-address")
+    >>> print(identity.name)
+    
+Storage:
+    - For MVP: In-memory storage
+    - Production: On-chain registry (ERC-8004 inspired) or database
 """
 
 import uuid
@@ -24,7 +41,18 @@ class AgentIdentity:
     """
     Represents an agent's identity in ClawTrust.
     
-    Uses wallet-based identification for MVP.
+    Each identity is tied to a Solana wallet address.
+    Reputation scores track the agent's trustworthiness.
+    
+    Attributes:
+        name: Human-readable name (e.g., "@happyclaw-agent")
+        wallet_address: Solana wallet address (primary identifier)
+        public_key: Associated public key
+        email: Optional contact email
+        reputation_score: Score from 0-100
+        total_rentals: Total rentals participated in
+        completed_rentals: Successfully completed rentals
+        status: Identity status (active, suspended, etc.)
     """
     name: str
     wallet_address: str
@@ -40,7 +68,12 @@ class AgentIdentity:
     metadata: dict = field(default_factory=dict)
     
     def to_dict(self) -> dict:
-        """Convert to dictionary"""
+        """
+        Convert identity to dictionary for serialization.
+        
+        Returns:
+            Dictionary representation of the identity
+        """
         return {
             "id": self.id,
             "name": self.name,
@@ -58,7 +91,15 @@ class AgentIdentity:
     
     @classmethod
     def from_dict(cls, data: dict) -> "AgentIdentity":
-        """Create from dictionary"""
+        """
+        Create identity from dictionary.
+        
+        Args:
+            data: Dictionary with identity fields
+            
+        Returns:
+            AgentIdentity instance
+        """
         status = IdentityStatus(data.get("status", "active"))
         return cls(
             id=data.get("id", f"agent-{uuid.uuid4().hex[:8]}"),
@@ -76,19 +117,29 @@ class AgentIdentity:
         )
     
     def update_reputation(self, score: float):
-        """Update reputation score"""
+        """
+        Update the reputation score.
+        
+        Args:
+            score: New score (0-100)
+        """
         self.reputation_score = score
         self.updated_at = datetime.utcnow().isoformat()
     
     def increment_rentals(self, completed: bool = False):
-        """Increment rental count"""
+        """
+        Increment rental count.
+        
+        Args:
+            completed: Whether the rental was completed successfully
+        """
         self.total_rentals += 1
         if completed:
             self.completed_rentals += 1
         self.updated_at = datetime.utcnow().isoformat()
     
     def to_short_str(self) -> str:
-        """Short string representation"""
+        """Short string representation for display"""
         return f"@{self.name} ({self.reputation_score:.0f}/100)"
 
 
@@ -96,51 +147,76 @@ class IdentityManager:
     """
     Manages agent identities.
     
-    For MVP: In-memory storage with mock data.
-    Future: On-chain registry or database.
+    Provides CRUD operations for agent identities.
+    For MVP: In-memory storage.
+    Production: Use on-chain registry or database.
+    
+    Example:
+        >>> manager = IdentityManager()
+        >>> agents = manager.list_identities()
+        >>> for agent in agents:
+        ...     print(agent.name)
     """
     
     def __init__(self):
+        """Initialize identity manager with empty storage"""
         self._identities: dict[str, AgentIdentity] = {}
         self._wallets: dict[str, AgentIdentity] = {}
-        self._init_demo_identities()
-    
-    def _init_demo_identities(self):
-        """Initialize demo identities"""
-        demos = [
-            ("happyclaw-agent", "happyclaw.sol", "happyclaw-pubkey"),
-            ("agent-alpha", "alpha.sol", "alpha-pubkey"),
-            ("agent-beta", "beta.sol", "beta-pubkey"),
-            ("agent-gamma", "gamma.sol", "gamma-pubkey"),
-        ]
-        
-        for name, wallet, pubkey in demos:
-            identity = AgentIdentity(
-                name=name,
-                wallet_address=wallet,
-                public_key=pubkey,
-                reputation_score=85.0,
-                total_rentals=10,
-                completed_rentals=9,
-            )
-            self.register(identity)
     
     def register(self, identity: AgentIdentity) -> AgentIdentity:
-        """Register a new identity"""
+        """
+        Register a new identity.
+        
+        Args:
+            identity: AgentIdentity to register
+            
+        Returns:
+            The registered identity
+            
+        Raises:
+            ValueError: If wallet already registered
+        """
+        if identity.wallet_address.lower() in self._wallets:
+            raise ValueError(f"Wallet {identity.wallet_address} already registered")
+        
         self._identities[identity.id] = identity
         self._wallets[identity.wallet_address.lower()] = identity
         return identity
     
     def get_by_id(self, id: str) -> Optional[AgentIdentity]:
-        """Get identity by ID"""
+        """
+        Get identity by ID.
+        
+        Args:
+            id: Agent ID
+            
+        Returns:
+            AgentIdentity or None if not found
+        """
         return self._identities.get(id)
     
     def get_by_wallet(self, wallet: str) -> Optional[AgentIdentity]:
-        """Get identity by wallet address"""
+        """
+        Get identity by wallet address.
+        
+        Args:
+            wallet: Wallet address
+            
+        Returns:
+            AgentIdentity or None if not found
+        """
         return self._wallets.get(wallet.lower())
     
     def get_by_name(self, name: str) -> Optional[AgentIdentity]:
-        """Get identity by name"""
+        """
+        Get identity by name.
+        
+        Args:
+            name: Agent name (without @)
+            
+        Returns:
+            AgentIdentity or None if not found
+        """
         for identity in self._identities.values():
             if identity.name.lower() == name.lower():
                 return identity
@@ -151,7 +227,16 @@ class IdentityManager:
         status: Optional[IdentityStatus] = None,
         min_reputation: Optional[float] = None,
     ) -> list[AgentIdentity]:
-        """List all identities with optional filters"""
+        """
+        List all identities with optional filters.
+        
+        Args:
+            status: Filter by status
+            min_reputation: Filter by minimum reputation score
+            
+        Returns:
+            List of matching identities
+        """
         identities = list(self._identities.values())
         
         if status:
@@ -170,14 +255,31 @@ class IdentityManager:
         wallet: str,
         score: float,
     ) -> Optional[AgentIdentity]:
-        """Update reputation for an identity"""
+        """
+        Update reputation for an identity.
+        
+        Args:
+            wallet: Wallet address
+            score: New reputation score
+            
+        Returns:
+            Updated identity or None if not found
+        """
         identity = self.get_by_wallet(wallet)
         if identity:
             identity.update_reputation(score)
         return identity
     
     def check_exists(self, wallet: str) -> bool:
-        """Check if identity exists for wallet"""
+        """
+        Check if identity exists for wallet.
+        
+        Args:
+            wallet: Wallet address
+            
+        Returns:
+            True if exists, False otherwise
+        """
         return wallet.lower() in self._wallets
 
 
@@ -187,9 +289,20 @@ def create_identity(
     name: str,
     wallet_address: str,
     public_key: str,
-    email: str = None,
+    email: Optional[str] = None,
 ) -> AgentIdentity:
-    """Create a new agent identity"""
+    """
+    Create a new agent identity.
+    
+    Args:
+        name: Agent name
+        wallet_address: Solana wallet address
+        public_key: Associated public key
+        email: Optional email
+        
+    Returns:
+        New AgentIdentity
+    """
     return AgentIdentity(
         name=name,
         wallet_address=wallet_address,
@@ -199,7 +312,15 @@ def create_identity(
 
 
 def load_identity(wallet: str) -> Optional[AgentIdentity]:
-    """Load identity from storage"""
+    """
+    Load identity from storage.
+    
+    Args:
+        wallet: Wallet address
+        
+    Returns:
+        AgentIdentity or None if not found
+    """
     manager = IdentityManager()
     return manager.get_by_wallet(wallet)
 
@@ -207,22 +328,24 @@ def load_identity(wallet: str) -> Optional[AgentIdentity]:
 # ============ CLI ============
 
 def demo():
-    """Demo the identity manager"""
+    """Demo identity management"""
     manager = IdentityManager()
     
-    # List all
-    print("Demo Identities:")
-    for identity in manager.list_identities():
-        print(f"  {identity.to_short_str()}")
+    # Create an identity
+    identity = create_identity(
+        name="happyclaw-agent",
+        wallet_address="happyclaw.sol",
+        public_key="happyclaw-pubkey",
+        email="happytreeiot@gmail.com",
+    )
+    identity.reputation_score = 85.0
     
-    # Get specific
-    agent = manager.get_by_name("happyclaw-agent")
-    if agent:
-        print(f"\nHappy Claw Details:")
-        print(f"  ID: {agent.id}")
-        print(f"  Wallet: {agent.wallet_address}")
-        print(f"  Reputation: {agent.reputation_score}")
-        print(f"  Rentals: {agent.total_rentals}/{agent.completed_rentals}")
+    manager.register(identity)
+    
+    # Query it
+    retrieved = manager.get_by_wallet("happyclaw.sol")
+    print(f"Name: {retrieved.name}")
+    print(f"Reputation: {retrieved.reputation_score}")
 
 
 if __name__ == "__main__":

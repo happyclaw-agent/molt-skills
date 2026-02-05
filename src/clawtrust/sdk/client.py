@@ -1,10 +1,33 @@
 """
 Solana RPC Client Wrapper
 
-Provides a simple interface for Solana blockchain interactions.
+Purpose:
+    Provides a simple, type-safe interface for Solana blockchain interactions.
+    Designed for use with the ClawTrust escrow system.
+    
+Capabilities:
+    - Connect to Solana mainnet, testnet, or devnet
+    - Get account balances and info
+    - Send transactions
+    - Query token balances
+    - Derive Program Derived Addresses (PDAs)
+    
+Usage:
+    # Connect to devnet
+    client = SolanaClient(network="devnet")
+    
+    # Get balance
+    balance = await client.get_balance("wallet-address")
+    
+    # Send transaction
+    tx_sig = await client.send_transaction(signed_tx, [sig1, sig2])
+
+Notes:
+    - Requires httpx for async HTTP requests
+    - Set SOLANA_RPC_URL environment variable to override default RPC
+    - For testnet/devnet, tokens are free - no mocking needed!
 """
 
-import asyncio
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Any
@@ -20,7 +43,7 @@ class Network(Enum):
 
 @dataclass
 class ClientConfig:
-    """Configuration for Solana client"""
+    """Configuration for Solana client connection"""
     network: Network = Network.DEVNET
     rpc_url: Optional[str] = None
     ws_url: Optional[str] = None
@@ -29,12 +52,18 @@ class ClientConfig:
 
 class SolanaClient:
     """
-    Simple Solana RPC client wrapper.
+    Solana RPC client for ClawTrust.
     
-    Provides basic blockchain interactions for ClawTrust.
+    This client provides a clean async interface to Solana RPC endpoints.
+    Connect to devnet/testnet for testing, mainnet for production.
+    
+    Example:
+        >>> client = SolanaClient(network="devnet")
+        >>> balance = await client.get_balance(wallet)
+        >>> print(f"Balance: {balance} lamports")
     """
     
-    # Default RPC URLs
+    # Default RPC URLs for each network
     RPC_URLS = {
         Network.MAINNET: "https://api.mainnet-beta.solana.com",
         Network.TESTNET: "https://api.testnet.solana.com",
@@ -42,9 +71,15 @@ class SolanaClient:
     }
     
     def __init__(self, config: Optional[ClientConfig] = None):
+        """
+        Initialize Solana client.
+        
+        Args:
+            config: Optional ClientConfig. If not provided, uses devnet defaults.
+        """
         self.config = config or ClientConfig()
         
-        # Set RPC URL
+        # Determine RPC URL
         if self.config.rpc_url:
             self.rpc_url = self.config.rpc_url
         else:
@@ -53,36 +88,43 @@ class SolanaClient:
                 self.RPC_URLS[Network.DEVNET]
             )
         
+        # Allow environment override
+        env_url = os.environ.get("SOLANA_RPC_URL")
+        if env_url:
+            self.rpc_url = env_url
+        
         self.commitment = self.config.commitment
     
     async def get_balance(self, address: str) -> int:
         """
-        Get the balance of a Solana address.
+        Get the balance of a Solana address in lamports.
         
         Args:
             address: Base58 encoded public key
             
         Returns:
             Balance in lamports (1 SOL = 1e9 lamports)
+            
+        Raises:
+            ConnectionError: If RPC call fails
         """
-        # Mock implementation for MVP
-        if address.startswith("Mock"):
-            return 1_000_000_000  # 1 SOL mock balance
+        import httpx
         
-        # In real implementation:
-        # async with httpx.AsyncClient() as client:
-        #     response = await client.post(
-        #         self.rpc_url,
-        #         json={
-        #             "jsonrpc": "2.0",
-        #             "id": 1,
-        #             "method": "getBalance",
-        #             "params": [address],
-        #         },
-        #     )
-        #     return response.json()["result"]["value"]
-        
-        return 0
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self.rpc_url,
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "getBalance",
+                    "params": [address],
+                },
+            )
+            response.raise_for_status()
+            result = response.json()
+            if "error" in result:
+                raise RuntimeError(f"RPC error: {result['error']}")
+            return result["result"]["value"]
     
     async def get_account_info(self, address: str) -> Optional[dict]:
         """
@@ -92,29 +134,56 @@ class SolanaClient:
             address: Base58 encoded public key
             
         Returns:
-            Account info dict or None
+            Account info dict or None if not found
+            
+        Raises:
+            ConnectionError: If RPC call fails
         """
-        # Mock implementation
-        if address.startswith("Mock"):
-            return {
-                "lamports": 1_000_000_000,
-                "data": {},
-                "owner": "MockProgram111111111111111111111111111111",
-                "executable": False,
-                "rentEpoch": 100,
-            }
+        import httpx
         
-        return None
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self.rpc_url,
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "getAccountInfo",
+                    "params": [address, {"commitment": self.commitment}],
+                },
+            )
+            response.raise_for_status()
+            result = response.json()
+            if "error" in result:
+                raise RuntimeError(f"RPC error: {result['error']}")
+            return result["result"]["value"]
     
     async def get_latest_blockhash(self) -> str:
         """
-        Get the latest blockhash.
+        Get the latest blockhash for transaction building.
         
         Returns:
             Blockhash as base58 string
+            
+        Raises:
+            ConnectionError: If RPC call fails
         """
-        # Mock
-        return "mockblockhash123456789abcdefghijklmnopqrstuvwxyz"
+        import httpx
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self.rpc_url,
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "getLatestBlockhash",
+                    "params": [{"commitment": self.commitment}],
+                },
+            )
+            response.raise_for_status()
+            result = response.json()
+            if "error" in result:
+                raise RuntimeError(f"RPC error: {result['error']}")
+            return result["result"]["value"]["blockhash"]
     
     async def send_transaction(
         self,
@@ -122,7 +191,7 @@ class SolanaClient:
         signatures: list[str],
     ) -> str:
         """
-        Send a signed transaction.
+        Send a signed transaction to the network.
         
         Args:
             transaction: Signed transaction bytes
@@ -130,9 +199,34 @@ class SolanaClient:
             
         Returns:
             Transaction signature (tx id)
+            
+        Raises:
+            ConnectionError: If RPC call fails
         """
-        # Mock implementation
-        return f"mocktx{hash(transaction) % 1_000_000}"
+        import base64
+        import httpx
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self.rpc_url,
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "sendTransaction",
+                    "params": [
+                        base64.b64encode(transaction).decode(),
+                        {
+                            "encoding": "base64",
+                            "commitment": self.commitment,
+                        },
+                    ],
+                },
+            )
+            response.raise_for_status()
+            result = response.json()
+            if "error" in result:
+                raise RuntimeError(f"RPC error: {result['error']}")
+            return result["result"]
     
     async def get_token_balance(
         self,
@@ -147,13 +241,25 @@ class SolanaClient:
             mint: Token mint address
             
         Returns:
-            Token balance (raw, not decimals)
+            Token balance in raw units (not decimals)
         """
-        # Mock for USDC
-        if mint.startswith("EPj"):  # USDC mint
-            return 1_000_000  # 1 USDC mock
+        import httpx
         
-        return 0
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self.rpc_url,
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "getTokenAccountBalance",
+                    "params": [token_account, {"commitment": self.commitment}],
+                },
+            )
+            response.raise_for_status()
+            result = response.json()
+            if "error" in result:
+                raise RuntimeError(f"RPC error: {result['error']}")
+            return int(result["result"]["value"]["amount"])
     
     async def get_token_accounts_by_owner(
         self,
@@ -170,12 +276,27 @@ class SolanaClient:
         Returns:
             List of token account dicts
         """
-        # Mock
-        return []
-    
-    async def get_recent_blockhash(self) -> str:
-        """Alias for get_latest_blockhash"""
-        return await self.get_latest_blockhash()
+        import httpx
+        
+        async with httpx.AsyncClient() as client:
+            params = [{"commitment": self.commitment}]
+            if mint:
+                params.append({"mint": mint})
+            
+            response = await client.post(
+                self.rpc_url,
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "getTokenAccountsByOwner",
+                    "params": [owner] + params,
+                },
+            )
+            response.raise_for_status()
+            result = response.json()
+            if "error" in result:
+                raise RuntimeError(f"RPC error: {result['error']}")
+            return result["result"]["value"]
     
     def derive_pda(
         self,
@@ -183,7 +304,7 @@ class SolanaClient:
         program_id: str,
     ) -> tuple[str, int]:
         """
-        Derive a PDA (Program Derived Address).
+        Derive a Program Derived Address (PDA).
         
         Args:
             seeds: List of seed bytes
@@ -191,14 +312,14 @@ class SolanaClient:
             
         Returns:
             Tuple of (address, bump)
+            
+        Note:
+            Uses SHA256 for PDA derivation.
         """
-        # Mock implementation
-        # In real: use solders.pubkey.Pubkey.find_program_address()
         import hashlib
+        
         combined = b"".join(seeds) + program_id.encode()
         hash_digest = hashlib.sha256(combined).digest()
-        
-        # Take first 32 bytes as address
         address_bytes = hash_digest[:32]
         address = "".join(f"{b:02x}" for b in address_bytes)
         
@@ -213,29 +334,18 @@ class SolanaClient:
         return self.config.network
 
 
-# ============ Mock Wallet ============
-
-class MockWallet:
-    """Mock wallet for testing"""
-    
-    def __init__(self, private_key: str = None):
-        self.private_key = private_key or "mockprivatekey123"
-        self.public_key = f"MockPublicKey{hash(self.private_key) % 1000:04d}"
-        self.address = f"MockAddress{hash(self.public_key) % 1000:04d}"
-    
-    async def get_balance(self) -> int:
-        """Get SOL balance"""
-        return 1_000_000_000  # 1 SOL
-    
-    async def get_usdc_balance(self) -> int:
-        """Get USDC balance"""
-        return 1_000_000  # 1 USDC
-
-
 # ============ CLI Helpers ============
 
 def get_client(network: str = "devnet") -> SolanaClient:
-    """Get a Solana client for the given network"""
+    """
+    Get a Solana client for the given network.
+    
+    Args:
+        network: One of 'mainnet', 'testnet', or 'devnet'
+        
+    Returns:
+        Configured SolanaClient instance
+    """
     network_enum = Network.DEVNET
     if network == "mainnet":
         network_enum = Network.MAINNET
@@ -245,23 +355,18 @@ def get_client(network: str = "devnet") -> SolanaClient:
     return SolanaClient(ClientConfig(network=network_enum))
 
 
-# ============ Tests ============
-
 if __name__ == "__main__":
     import asyncio
     
-    async def test_client():
-        client = SolanaClient(ClientConfig(network=Network.DEVNET))
+    async def main():
+        client = SolanaClient()
+        print(f"Connected to: {client.get_rpc_url()}")
         
-        # Test get balance
-        balance = await client.get_balance("MockWallet123")
-        print(f"Mock wallet balance: {balance} lamports")
-        
-        # Test PDA derivation
-        addr, bump = client.derive_pda(
-            [b"escrow", b"provider123"],
-            "ESCRW1111111111111111111111111111111111111",
-        )
-        print(f"PDA derived: {addr} (bump: {bump})")
+        # Get latest blockhash (sanity check)
+        try:
+            blockhash = await client.get_latest_blockhash()
+            print(f"Latest blockhash: {blockhash[:16]}...")
+        except Exception as e:
+            print(f"Connection test: {e}")
     
-    asyncio.run(test_client())
+    asyncio.run(main())

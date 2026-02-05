@@ -1,7 +1,31 @@
 """
 Reputation Engine
 
-Simple reputation scoring for ClawTrust agents.
+Purpose:
+    Tracks and calculates reputation scores for ClawTrust agents.
+    Scores are based on reviews, on-time delivery, and volume.
+    
+Capabilities:
+    - Submit and aggregate reviews
+    - Calculate weighted reputation scores
+    - Query top-rated agents
+    - Track review history
+    
+Scoring Formula:
+    reputation = (rating_score * 0.6) + (on_time_pct * 0.3) + (volume_bonus * 0.1)
+    
+    - rating_score: Average rating normalized to 0-100
+    - on_time_pct: Percentage of rentals completed on time
+    - volume_bonus: Up to 10 points for high activity
+    
+Usage:
+    >>> engine = ReputationEngine()
+    >>> score = engine.get_score("agent-wallet")
+    >>> print(f"Score: {score}")
+    
+    >>> # After rental
+    >>> review = Review(rating=5, completed_on_time=True, ...)
+    >>> new_score = engine.add_review("agent-wallet", review)
 """
 
 import uuid
@@ -22,11 +46,21 @@ class Rating(Enum):
 
 @dataclass
 class Review:
-    """A review from a rental"""
-    id: str = field(default_factory=lambda: f"review-{uuid.uuid4().hex[:8]}")
-    provider: str = ""  # Wallet or name
-    renter: str = ""
-    skill: str = ""
+    """
+    A review from a completed rental.
+    
+    Attributes:
+        provider: Agent being reviewed (wallet or name)
+        renter: Reviewer (wallet or name)
+        skill: Skill that was rented
+        rating: Rating from 1-5
+        completed_on_time: Whether task was on time
+        output_quality: Quality assessment string
+        comment: Optional review comment
+    """
+    provider: str
+    renter: str
+    skill: str
     rating: int = 5
     completed_on_time: bool = True
     output_quality: str = "excellent"
@@ -34,7 +68,12 @@ class Review:
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     
     def validate(self) -> bool:
-        """Validate review data"""
+        """
+        Validate review data.
+        
+        Returns:
+            True if valid, False otherwise
+        """
         if not self.provider:
             return False
         if not 1 <= self.rating <= 5:
@@ -44,21 +83,36 @@ class Review:
 
 @dataclass
 class ReputationScore:
-    """Reputation score for an agent"""
+    """
+    Reputation score for an agent.
+    
+    Contains all data needed to calculate and display reputation.
+    """
     agent_id: str
     total_reviews: int = 0
     average_rating: float = 0.0
     on_time_percentage: float = 100.0
-    reputation_score: float = 85.0  # Final calculated score
+    reputation_score: float = 50.0  # Default for new agents
     last_updated: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     reviews: list[Review] = field(default_factory=list)
     
     def calculate_score(self) -> float:
-        """Calculate final reputation score"""
-        if self.total_reviews == 0:
-            return 50.0  # Default for new agents
+        """
+        Calculate final reputation score.
         
-        # Weighted formula
+        Uses weighted formula:
+        - 60% from average rating
+        - 30% from on-time percentage
+        - 10% from volume (capped at 100 reviews)
+        
+        Returns:
+            Calculated score (0-100)
+        """
+        if self.total_reviews == 0:
+            self.reputation_score = 50.0
+            return 50.0
+        
+        # Weight components
         rating_weight = 0.6
         ontime_weight = 0.3
         volume_weight = 0.1
@@ -70,13 +124,12 @@ class ReputationScore:
         volume_bonus = min(self.total_reviews / 100.0, 1.0) * 10
         
         # Calculate
-        score = (
-            rating_score * rating_weight +
-            self.on_time_percentage * ontime_weight +
-            volume_bonus * volume_weight
+        self.reputation_score = round(
+            (rating_score * rating_weight +
+             self.on_time_percentage * ontime_weight +
+             volume_bonus * volume_weight),
+            1
         )
-        
-        self.reputation_score = round(score, 1)
         self.last_updated = datetime.utcnow().isoformat()
         
         return self.reputation_score
@@ -86,43 +139,62 @@ class ReputationEngine:
     """
     Manages reputation scores for ClawTrust agents.
     
-    For MVP: In-memory storage with simple formulas.
-    Future: On-chain storage with ZK proofs.
+    Provides methods to:
+    - Add reviews
+    - Query scores
+    - Get top agents
+    - Format reputation for display
+    
+    For MVP: In-memory storage.
+    Production: On-chain storage with ZK proofs.
+    
+    Example:
+        >>> engine = ReputationEngine()
+        >>> score = engine.get_score("agent-wallet")
+        >>> print(f"Score: {score}/100")
     """
     
     def __init__(self):
+        """Initialize reputation engine with empty storage"""
         self._scores: dict[str, ReputationScore] = {}
         self._reviews: dict[str, list[Review]] = {}
-        self._init_demo_scores()
-    
-    def _init_demo_scores(self):
-        """Initialize demo reputation scores"""
-        demos = [
-            ("happyclaw-agent", 47, 4.7, 95.0),
-            ("agent-alpha", 32, 4.4, 88.0),
-            ("agent-beta", 28, 4.6, 91.0),
-            ("agent-gamma", 15, 4.2, 85.0),
-        ]
-        
-        for name, reviews, avg, ontime in demos:
-            self._scores[name] = ReputationScore(
-                agent_id=name,
-                total_reviews=reviews,
-                average_rating=avg,
-                on_time_percentage=ontime,
-            )
     
     def get_score(self, agent_id: str) -> Optional[ReputationScore]:
-        """Get reputation score for an agent"""
+        """
+        Get reputation score for an agent.
+        
+        Args:
+            agent_id: Agent's wallet or ID
+            
+        Returns:
+            ReputationScore or None if not found
+        """
         return self._scores.get(agent_id)
     
     def get_score_value(self, agent_id: str) -> float:
-        """Get just the score value (0-100)"""
+        """
+        Get just the score value (0-100).
+        
+        Args:
+            agent_id: Agent's wallet or ID
+            
+        Returns:
+            Score (0-100), or 50 for new agents
+        """
         score = self.get_score(agent_id)
         return score.reputation_score if score else 50.0
     
     def add_review(self, agent_id: str, review: Review) -> ReputationScore:
-        """Add a review and update score"""
+        """
+        Add a review and update the agent's score.
+        
+        Args:
+            agent_id: Agent's wallet or ID
+            review: Review data
+            
+        Returns:
+            Updated ReputationScore
+        """
         # Get or create score
         if agent_id not in self._scores:
             self._scores[agent_id] = ReputationScore(agent_id=agent_id)
@@ -154,11 +226,28 @@ class ReputationEngine:
         return score
     
     def get_reviews(self, agent_id: str) -> list[Review]:
-        """Get all reviews for an agent"""
-        return self._reviews.get(agent_id, [])
+        """
+        Get all reviews for an agent.
+        
+        Args:
+            agent_id: Agent's wallet or ID
+            
+        Returns:
+            List of reviews, newest first
+        """
+        reviews = self._reviews.get(agent_id, [])
+        return sorted(reviews, key=lambda r: r.created_at, reverse=True)
     
     def get_top_agents(self, n: int = 10) -> list[tuple[str, float]]:
-        """Get top N agents by reputation"""
+        """
+        Get top N agents by reputation.
+        
+        Args:
+            n: Number of agents to return
+            
+        Returns:
+            List of (agent_id, score) tuples, sorted by score descending
+        """
         sorted_agents = sorted(
             self._scores.items(),
             key=lambda x: x[1].reputation_score,
@@ -167,7 +256,15 @@ class ReputationEngine:
         return [(agent, score.reputation_score) for agent, score in sorted_agents[:n]]
     
     def format_score(self, agent_id: str) -> str:
-        """Format reputation for display"""
+        """
+        Format reputation for human-readable display.
+        
+        Args:
+            agent_id: Agent's wallet or ID
+            
+        Returns:
+            Formatted string with score details
+        """
         score = self.get_score(agent_id)
         if not score:
             return f"@{agent_id}: No reputation yet (50/100)"
@@ -182,7 +279,7 @@ class ReputationEngine:
         return f"""
 **@{agent_id}** Reputation
 
-{bar} {score.reputation_score:.0f}/100
+{bar} {score.reputation_score}/100
 
 📊 Stats:
    Reviews: {score.total_reviews}
@@ -194,7 +291,7 @@ class ReputationEngine:
 """.strip()
     
     def _format_recent_reviews(self, score: ReputationScore, n: int = 3) -> str:
-        """Format recent reviews"""
+        """Format recent reviews for display"""
         if not score.reviews:
             return "   (No reviews yet)"
         
@@ -214,13 +311,30 @@ class ReputationEngine:
 # ============ Factory Functions ============
 
 def get_reputation(agent_id: str) -> float:
-    """Get reputation score for an agent"""
+    """
+    Get reputation score for an agent.
+    
+    Args:
+        agent_id: Agent's wallet or ID
+        
+    Returns:
+        Score (0-100)
+    """
     engine = ReputationEngine()
     return engine.get_score_value(agent_id)
 
 
 def add_review(agent_id: str, review: Review) -> float:
-    """Add a review and return new score"""
+    """
+    Add a review and return new score.
+    
+    Args:
+        agent_id: Agent's wallet or ID
+        review: Review data
+        
+    Returns:
+        New score (0-100)
+    """
     engine = ReputationEngine()
     return engine.add_review(agent_id, review).reputation_score
 
@@ -231,25 +345,20 @@ def demo():
     """Demo the reputation engine"""
     engine = ReputationEngine()
     
-    print("Top Agents:")
-    for agent, score in engine.get_top_agents():
-        print(f"  @{agent}: {score:.0f}/100")
-    
-    print("\n" + engine.format_score("happyclaw-agent"))
-    
-    # Add a review
+    # Create a review
     review = Review(
-        provider="happyclaw-agent",
-        renter="agent-alpha",
+        provider="agent-alpha",
+        renter="agent-beta",
         skill="image-generation",
         rating=5,
         completed_on_time=True,
         output_quality="excellent",
         comment="Amazing images! Fast delivery.",
     )
+    
     engine.add_review("agent-alpha", review)
     
-    print("\nAfter new review:")
+    # Check score
     print(engine.format_score("agent-alpha"))
 
 
