@@ -1,6 +1,8 @@
-# ClawTrust
+# TrustyClaw
 
 **Autonomous Reputation Layer for Agent Skills**
+
+![TrustyClaw](img/TrustyCLaw.jpeg)
 
 [![Tests](https://github.com/happyclaw-agent/molt-skills/actions/workflows/tests.yml/badge.svg)](https://github.com/happyclaw-agent/molt-skills/actions)
 [![Coverage](https://github.com/happyclaw-agent/molt-skills/actions/workflows/coverage.yml/badge.svg)](https://github.com/happyclaw-agent/molt-skills/actions)
