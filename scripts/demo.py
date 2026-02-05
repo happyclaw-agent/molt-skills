@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from trustyclaw.sdk.client import SolanaClient
 from trustyclaw.sdk.identity import AgentIdentity
 from trustyclaw.sdk.reputation import ReputationEngine, Review
+from trustyclaw.sdk.solana import get_client, WalletInfo
 
 
 # ============ Devnet Wallets ============
@@ -125,9 +126,22 @@ class TrustyClawDemo:
             )
             self.reputation = ReputationEngine()
         else:
-            # Real initialization
-            self.client = SolanaClient(network=self.network)
-            # ... init real client
+            # Real initialization with Solana client
+            self.client = get_client(self.network)
+            self.log(f"Connected to Solana {self.network}")
+            
+            # Show wallet balances
+            self.log("\n📱 Wallet Balances:")
+            for role, wallet in WALLETS.items():
+                info = self.client.get_balance(wallet["address"])
+                self.log(f"   {wallet['name']}: {info.sol_balance:.4f} SOL | {info.usdc_balance:.2f} USDC")
+            
+            self.identity = AgentIdentity(
+                name="Happy Claw",
+                wallet_address=WALLETS["agent"]["address"],
+                public_key="RealPublicKey456",
+            )
+            self.reputation = ReputationEngine()
     
     async def step1_discovery(self) -> dict:
         """Step 1: Agent discovers available skills"""
