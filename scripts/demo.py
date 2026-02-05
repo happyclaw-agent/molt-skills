@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from clawtrust.sdk.client import SolanaClient
 from clawtrust.sdk.identity import AgentIdentity
-from clawtrust.sdk.reputation import ReputationEngine
+from clawtrust.sdk.reputation import ReputationEngine, Review
 
 
 # ============ Devnet Wallets ============
@@ -248,21 +248,21 @@ class ClawTrustDemo:
         self.log("STEP 5: Reputation Update")
         self.log("=" * 50)
         
-        # Calculate new reputation
-        review = {
-            "provider": mandate["provider"],
-            "renter": self.identity.name,
-            "skill": mandate["skill_name"],
-            "rating": 5,  # 1-5 stars
-            "completed_on_time": True,
-            "output_quality": "excellent",
-            "comment": "Fast delivery, great quality!",
-        }
+        # Create review using Review dataclass
+        review = Review(
+            provider=mandate["provider"],
+            renter=self.identity.name,
+            skill=mandate["skill_name"],
+            rating=5,  # 1-5 stars
+            completed_on_time=True,
+            output_quality="excellent",
+            comment="Fast delivery, great quality!",
+        )
         
-        self.log(f"Review from @{review['renter']} for @{review['provider']}:")
-        self.log(f"  ⭐ Rating: {'⭐' * review['rating']}")
-        self.log(f"  ✅ On-time: {review['completed_on_time']}")
-        self.log(f"  💬 \"{review['comment']}\"")
+        self.log(f"Review from @{review.renter} for @{review.provider}:")
+        self.log(f"  ⭐ Rating: {'⭐' * review.rating}")
+        self.log(f"  ✅ On-time: {review.completed_on_time}")
+        self.log(f"  💬 \"{review.comment}\"")
         
         # Update reputation score
         new_score = self.reputation.add_review(
