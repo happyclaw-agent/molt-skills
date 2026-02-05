@@ -15,7 +15,6 @@ requests = "^2.31.0"
 python-dotenv = "^1.0.0"
 httpx = "^0.26.0"
 pytest = "^8.0.0"
-pytest-asyncio = "^0.23.0"
 pytest-cov = "^4.1.0"
 black = "^24.0.0"
 ruff = "^0.2.0"
@@ -44,3 +43,9 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["src/tests/unit/test_simple.py"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v"
