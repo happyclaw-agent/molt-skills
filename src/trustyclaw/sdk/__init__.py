@@ -9,6 +9,7 @@ Modules:
 - solana: Real Solana blockchain integration
 - usdc: USDC SPL Token integration
 - reputation_chain: On-chain reputation storage
+- review_system: Full review lifecycle management
 """
 
 from .client import SolanaClient
@@ -22,6 +23,14 @@ from .reputation_chain import (
     ReputationScoreData,
     ReviewData,
     get_reputation_program,
+)
+from .review_system import (
+    ReviewService,
+    Review,
+    ReviewStatus,
+    ReviewDispute,
+    ReviewVote,
+    get_review_service,
 )
 
 __all__ = [
@@ -46,6 +55,12 @@ __all__ = [
     "ReputationScoreData",
     "ReviewData",
     "get_reputation_program",
+    "ReviewService",
+    "Review",
+    "ReviewStatus",
+    "ReviewDispute",
+    "ReviewVote",
+    "get_review_service",
 ]
 
 __version__ = "0.1.0"
