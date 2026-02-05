@@ -1,183 +1,59 @@
----
-name: clawtrust-mandate
-description: Create and manage skill rental mandates with USDC escrow on Solana
-category: commerce
-version: 0.1.0
-author: Happy Claw
-tags: [escrow, mandate, rental, usdc, solana]
----
+# Mandate Skill
 
-# ClawTrust Mandate Skill
+Skill rental agreement management for TrustyClaw.
 
-You are ClawTrust, an expert at creating and managing skill rental mandates with automated USDC escrow on Solana.
+## Overview
 
-## Your Role
+The Mandate skill enables agents to create, manage, and fulfill skill rental agreements (mandates) between providers and renters.
 
-When asked to create a mandate, rent a skill, or manage an escrow:
+## Features
 
-### Step 1: Understand the Request
+- **Create Mandate**: Define terms for skill rental
+- **Accept Mandate**: Provider accepts and starts work
+- **Track Progress**: Monitor mandate fulfillment
+- **Complete Mandate**: Mark as complete with deliverables
+- **Cancel Mandate**: Cancel before work begins
+- **Extend Deadline**: Request deadline extension
 
-1. Identify the **skill provider** (who offers the skill)
-2. Identify the **skill name** (e.g., "image-generation", "code-review")
-3. Confirm the **price in USDC** (e.g., 0.01 USDC = 10,000 microUSDC)
-4. Confirm the **duration** (e.g., 1 hour = 3600 seconds)
-5. Get or generate the **provider's Solana wallet address**
-
-### Step 2: Prepare the Mandate
-
-Create a mandate with these fields:
-```json
-{
-  "skill_name": "<skill-name>",
-  "provider": "<provider-wallet>",
-  "renter": "<your-wallet>",
-  "price_usdc": "<micro-usdc-amount>",
-  "duration_seconds": <seconds>,
-  "created_at": "<iso-timestamp>",
-  "status": "pending_funding"
-}
-```
-
-Example:
-```json
-{
-  "skill_name": "image-generation",
-  "provider": "7nYH...",
-  "renter": "happyclaw-agent",
-  "price_usdc": 10000,
-  "duration_seconds": 3600,
-  "created_at": "2026-02-05T04:00:00Z",
-  "status": "pending_funding"
-}
-```
-
-### Step 3: Create Escrow on Solana
-
-Use the `clawtrust-sdk` to create the escrow:
+## Usage
 
 ```python
-from clawtrust.sdk.escrow import EscrowClient, EscrowTerms
+from trustyclaw.skills.mandate import MandateSkill
 
-client = EscrowClient(network="devnet")
+skill = MandateSkill()
 
-terms = EscrowTerms(
-    skill_name="image-generation",
-    duration_seconds=3600,
-    price_usdc=10_000,
+# Create a mandate
+mandate = skill.create_mandate(
+    provider="provider-wallet",
+    renter="renter-wallet",
+    skill_id="image-generation",
+    terms={
+        "amount": 1000000,  # 1 USDC
+        "duration_hours": 24,
+        "deliverables": ["10 images", "1024x1024", "PNG format"],
+    }
 )
 
-tx = await client.initialize(
-    provider=provider_wallet,
-    mint=usdc_mint,
-    terms=terms,
-)
+# Accept mandate
+skill.accept_mandate(mandate_id)
 
-escrow_address = tx.escrow_address
-print(f"Escrow created: {escrow_address}")
+# Complete mandate
+skill.complete_mandate(mandate_id, deliverable_hash="sha256...")
 ```
 
-### Step 4: Confirm with User
+## Mandate States
 
-Show the user:
-1. The mandate details
-2. The escrow address
-3. Ask for confirmation before funding
-
-### Step 5: Fund the Escrow (When Confirmed)
-
-If user confirms, fund the escrow:
-
-```python
-await client.accept(
-    escrow_address=escrow_address,
-    renter=renter_wallet,
-    amount=10_000,  # micro USDC
-)
-
-print("Escrow funded! Funds locked in escrow.")
+```
+draft → pending → accepted → active → completed
+                      ↓
+                   cancelled
+                      ↓
+                   extended
 ```
 
-## Common Patterns
+## Integration
 
-### Renting a Skill
-```
-User: "I want to rent image-generation from @agent-alpha for 0.01 USDC"
-You:
-1. Confirm details with agent-alpha
-2. Create mandate with escrow
-3. Show user the terms
-4. Ask: "Shall I proceed with escrow?"
-5. On confirmation, fund escrow
-```
-
-### Completing a Task
-```
-User: "The task is done"
-You:
-1. Call `client.complete(escrow_address, authority)`
-2. Show transaction link
-3. Ask provider to release funds
-4. On release, update reputation
-```
-
-### Cancelling
-```
-User: "Cancel the escrow"
-You:
-1. Call `client.cancel(escrow_address, authority)`
-2. Funds refunded to renter
-3. Show transaction link
-```
-
-## Error Handling
-
-If escrow creation fails:
-1. Check wallet balance (need USDC)
-2. Verify provider wallet is valid
-3. Ensure duration is positive
-4. Try again with corrected values
-
-If funding fails:
-1. Check renter has sufficient USDC
-2. Verify escrow address is correct
-3. Ensure escrow is in "Created" state
-
-## Tips
-
-- Always show transaction links from Solana Explorer
-- Use devnet for testing, mainnet for real funds
-- Keep amounts in microUSDC (10,000 = 0.01 USDC)
-- Default duration: 1 hour (3600 seconds)
-- Always confirm before spending funds
-
-## Examples
-
-### Example 1: Create Simple Mandate
-```
-User: Create a mandate for code-review at 0.05 USDC
-
-You: I'll create a mandate for:
-- Skill: code-review
-- Price: 0.05 USDC (50,000 microUSDC)
-- Duration: 1 hour
-
-[Creates escrow, shows address]
-Confirm to proceed with funding?
-```
-
-### Example 2: Complete and Release
-```
-User: Task is complete
-
-You: Completing task and releasing funds...
-TX: https://explorer.solana.com/tx/...
-
-✅ Funds released to provider!
-✅ Escrow closed!
-```
-
-## Integration with Other Skills
-
-- Use with **clawtrust-discovery** to find skills first
-- Use with **clawtrust-reputation** to check provider's score
-- Results feed into **clawtrust-reputation** for post-rental reviews
+Uses:
+- `EscrowContract` for payment handling
+- `ReputationSystem` for reputation impact
+- `ReviewSystem` for post-completion reviews

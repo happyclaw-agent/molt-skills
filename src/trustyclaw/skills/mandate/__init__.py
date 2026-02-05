@@ -1,213 +1,497 @@
 """
-Mandate Skill Wrapper for ClawTrust
+Mandate Skill for TrustyClaw
 
-This module provides Python functions for the Mandate OpenClaw skill.
+Skill rental agreement management.
 """
 
-from dataclasses import dataclass
-from datetime import datetime
+from dataclasses import dataclass, field
+from typing import Optional, Dict, List, Any
+from datetime import datetime, timedelta
 from enum import Enum
-from typing import Optional
+import uuid
+import json
 
 
 class MandateStatus(Enum):
-    """Status of a mandate"""
+    """Mandate lifecycle status"""
+    DRAFT = "draft"
     PENDING = "pending"
-    FUNDED = "funded"
+    ACCEPTED = "accepted"
+    ACTIVE = "active"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+    EXTENDED = "extended"
+
+
+class MandateError(Exception):
+    """Mandate operation error"""
+    pass
 
 
 @dataclass
 class MandateTerms:
-    """Terms of a skill rental mandate"""
-    skill_name: str
-    provider: str
-    renter: str
-    price_usdc: int  # microUSDC
-    duration_seconds: int
-    metadata_uri: str = ""
-    created_at: str = ""
+    """Terms of the mandate agreement"""
+    skill_id: str
+    amount: int  # USDC lamports
+    duration_hours: int
+    deliverables: List[str]
+    requirements: List[str] = field(default_factory=list)
+    revisions: int = 0  # Number of free revisions
+    exclusivity: bool = False  # Exclusive use during mandate
+    confidentiality: bool = True
     
-    def __post_init__(self):
-        if not self.created_at:
-            self.created_at = datetime.utcnow().isoformat()
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "skill_id": self.skill_id,
+            "amount": self.amount,
+            "duration_hours": self.duration_hours,
+            "deliverables": self.deliverables,
+            "requirements": self.requirements,
+            "revisions": self.revisions,
+            "exclusivity": self.exclusivity,
+            "confidentiality": self.confidentiality,
+        }
 
 
 @dataclass
 class Mandate:
-    """A skill rental mandate"""
-    id: str
+    """Complete mandate record"""
+    mandate_id: str
+    provider: str
+    renter: str
     terms: MandateTerms
-    escrow_address: str = ""
-    status: MandateStatus = MandateStatus.PENDING
-    tx_signature: str = ""
-    completed_at: str = ""
+    status: MandateStatus = MandateStatus.DRAFT
+    escrow_id: Optional[str] = None
+    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    accepted_at: Optional[str] = None
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    deadline: Optional[str] = None
+    extended_deadline: Optional[str] = None
+    revision_count: int = 0
+    deliverable_hash: Optional[str] = None
+    renter_rating: Optional[int] = None
+    provider_rating: Optional[int] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "mandate_id": self.mandate_id,
+            "provider": self.provider,
+            "renter": self.renter,
+            "terms": self.terms.to_dict(),
+            "status": self.status.value,
+            "escrow_id": self.escrow_id,
+            "created_at": self.created_at,
+            "accepted_at": self.accepted_at,
+            "started_at": self.started_at,
+            "completed_at": self.completed_at,
+            "deadline": self.deadline,
+            "extended_deadline": self.extended_deadline,
+            "revision_count": self.revision_count,
+            "deliverable_hash": self.deliverable_hash,
+            "renter_rating": self.renter_rating,
+            "provider_rating": self.provider_rating,
+        }
 
 
-# ============ Devnet Wallets ============
-# Configured for Solana Devnet testing
-# Fund these at: https://faucet.circle.com/
-
-WALLETS = {
-    "agent": {
-        "address": "GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q",
-        "name": "Happy Claw (Agent)",
-    },
-    "renter": {
-        "address": "3WaHbF7k9ced4d2wA8caUHq2v57ujD4J2c57L8wZXfhN",
-        "name": "Renter Agent",
-    },
-    "provider": {
-        "address": "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
-        "name": "Provider Agent",
-    },
-}
-
-# ============ Demo Skills ============
-
-DEMO_SKILLS = {
-    "image-generation": {
-        "name": "Image Generation",
-        "provider": "GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q",
-        "wallet": "GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q",
-        "price_usdc": 10000,
-        "description": "Generate images from text prompts using SDXL",
-        "capabilities": ["text-to-image", "style-transfer", "inpainting"],
-    },
-    "code-review": {
-        "name": "Code Review", 
-        "provider": "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
-        "wallet": "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
-        "price_usdc": 50000,
-        "description": "Automated code review with security checks",
-        "capabilities": ["security-scan", "bug-detection", "style-check"],
-    },
-    "data-analysis": {
-        "name": "Data Analysis",
-        "provider": "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
-        "wallet": "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
-        "price_usdc": 20000,
-        "description": "Statistical analysis and visualization",
-        "capabilities": ["regression", "clustering", "charts"],
-    },
-}
-
-
-class MandateService:
-    """Service for creating and managing mandates"""
+class MandateSkill:
+    """
+    Skill for managing rental agreements between providers and renters.
+    
+    Features:
+    - Create mandates with detailed terms
+    - Accept/decline mandates
+    - Track progress and deadlines
+    - Manage revisions
+    - Complete with deliverables
+    """
     
     def __init__(self, mock: bool = True):
         self.mock = mock
-        self._mandates: dict[str, Mandate] = {}
+        self._mandates: Dict[str, Mandate] = {}
+        
+        if mock:
+            self._init_mock_data()
     
-    def create_terms(
-        self,
-        skill_name: str,
-        provider: str,
-        renter: str,
-        price_usdc: int,
-        duration_seconds: int = 3600,
-        metadata_uri: str = "",
-    ) -> MandateTerms:
-        """Create mandate terms"""
-        return MandateTerms(
-            skill_name=skill_name,
-            provider=provider,
-            renter=renter,
-            price_usdc=price_usdc,
-            duration_seconds=duration_seconds,
-            metadata_uri=metadata_uri,
+    def _init_mock_data(self):
+        """Initialize mock mandates"""
+        terms = MandateTerms(
+            skill_id="image-generation",
+            amount=1000000,
+            duration_hours=24,
+            deliverables=["5 images", "1024x1024", "PNG"],
+            requirements=["High quality", "Original content"],
         )
-    
-    def create_mandate(self, terms: MandateTerms) -> Mandate:
-        """Create a new mandate"""
-        import uuid
-        mandate_id = f"mandate-{uuid.uuid4().hex[:8]}"
         
         mandate = Mandate(
-            id=mandate_id,
+            mandate_id="mandate-demo-1",
+            provider="GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q",
+            renter="3WaHbF7k9ced4d2wA8caUHq2v57ujD4J2c57L8wZXfhN",
             terms=terms,
-            status=MandateStatus.PENDING,
+            status=MandateStatus.ACCEPTED,
+            accepted_at=datetime.utcnow().isoformat(),
+            started_at=datetime.utcnow().isoformat(),
+            deadline=(datetime.utcnow() + timedelta(hours=24)).isoformat(),
+        )
+        self._mandates[mandate.mandate_id] = mandate
+    
+    # ============ CRUD Operations ============
+    
+    def create_mandate(
+        self,
+        provider: str,
+        renter: str,
+        skill_id: str,
+        amount: int,
+        duration_hours: int,
+        deliverables: List[str],
+        requirements: List[str] = None,
+        revisions: int = 0,
+        exclusivity: bool = False,
+        confidentiality: bool = True,
+    ) -> Mandate:
+        """
+        Create a new mandate (rental agreement).
+        
+        Args:
+            provider: Provider wallet address
+            renter: Renter wallet address
+            skill_id: Skill being rented
+            amount: USDC amount
+            duration_hours: Max duration
+            deliverables: List of expected deliverables
+            requirements: Additional requirements
+            revisions: Number of free revisions
+            exclusivity: Exclusive use during mandate
+            confidentiality: Confidential work
+            
+        Returns:
+            Created Mandate
+        """
+        mandate_id = f"mandate-{uuid.uuid4().hex[:12]}"
+        
+        terms = MandateTerms(
+            skill_id=skill_id,
+            amount=amount,
+            duration_hours=duration_hours,
+            deliverables=deliverables,
+            requirements=requirements or [],
+            revisions=revisions,
+            exclusivity=exclusivity,
+            confidentiality=confidentiality,
+        )
+        
+        deadline = datetime.utcnow() + timedelta(hours=duration_hours)
+        
+        mandate = Mandate(
+            mandate_id=mandate_id,
+            provider=provider,
+            renter=renter,
+            terms=terms,
+            status=MandateStatus.DRAFT,
+            deadline=deadline.isoformat(),
         )
         
         self._mandates[mandate_id] = mandate
         return mandate
     
     def get_mandate(self, mandate_id: str) -> Optional[Mandate]:
-        """Get a mandate by ID"""
+        """Get mandate by ID"""
         return self._mandates.get(mandate_id)
     
-    def list_mandates(self, status: Optional[MandateStatus] = None) -> list[Mandate]:
-        """List all mandates, optionally filtered by status"""
-        mandates = list(self._mandates.values())
+    def get_mandates_by_participant(
+        self,
+        address: str,
+        status: Optional[MandateStatus] = None,
+    ) -> List[Mandate]:
+        """Get all mandates for a participant"""
+        mandates = [
+            m for m in self._mandates.values()
+            if m.provider == address or m.renter == address
+        ]
+        
         if status:
             mandates = [m for m in mandates if m.status == status]
-        return mandates
-    
-    def format_terms(self, terms: MandateTerms) -> str:
-        """Format mandate terms for display"""
-        price_usd = terms.price_usdc / 1_000_000
-        duration_min = terms.duration_seconds // 60
         
-        return f"""
-**Mandate Terms**
-- Skill: {terms.skill_name}
-- Provider: @{terms.provider}
-- Renter: @{terms.renter}
-- Price: ${price_usd:.2f} USDC ({terms.price_usdc:,} microUSDC)
-- Duration: {duration_min} minutes
-- Created: {terms.created_at}
-""".strip()
+        return sorted(mandates, key=lambda m: m.created_at, reverse=True)
     
-    def format_mandate(self, mandate: Mandate) -> str:
-        """Format mandate for display"""
-        status_emoji = {
-            MandateStatus.PENDING: "⏳",
-            MandateStatus.FUNDED: "💰",
-            MandateStatus.COMPLETED: "✅",
-            MandateStatus.CANCELLED: "❌",
-        }
+    # ============ Lifecycle Operations ============
+    
+    def submit_mandate(self, mandate_id: str) -> Mandate:
+        """
+        Submit mandate for provider acceptance.
         
-        price_usd = mandate.terms.price_usdc / 1_000_000
+        Args:
+            mandate_id: Mandate to submit
+            
+        Returns:
+            Updated Mandate
+        """
+        mandate = self._get_mandate(mandate_id)
         
-        return f"""
-{status_emoji.get(mandate.status, '')} **Mandate #{mandate.id}**
-
-{self.format_terms(mandate.terms)}
-
-- Status: {mandate.status.value}
-- Escrow: {mandate.escrow_address or 'Not created'}
-- TX: {mandate.tx_signature or 'Pending'}
-""".strip()
-
-
-# ============ CLI ============
-
-def demo():
-    """Demo the mandate service"""
-    service = MandateService(mock=True)
+        if mandate.status != MandateStatus.DRAFT:
+            raise MandateError(f"Mandate {mandate_id} is not in DRAFT state")
+        
+        mandate.status = MandateStatus.PENDING
+        return mandate
     
-    # Create terms
-    terms = service.create_terms(
-        skill_name="image-generation",
-        provider="agent-alpha",
-        renter="happyclaw-agent",
-        price_usdc=10000,  # 0.01 USDC
-        duration_seconds=3600,
-    )
+    def accept_mandate(self, mandate_id: str) -> Mandate:
+        """
+        Accept a pending mandate (provider).
+        
+        Args:
+            mandate_id: Mandate to accept
+            
+        Returns:
+            Updated Mandate
+        """
+        mandate = self._get_mandate(mandate_id)
+        
+        if mandate.status != MandateStatus.PENDING:
+            raise MandateError(f"Mandate {mandate_id} is not in PENDING state")
+        
+        mandate.status = MandateStatus.ACCEPTED
+        mandate.accepted_at = datetime.utcnow().isoformat()
+        
+        # Auto-start if escrow is funded
+        if mandate.escrow_id:
+            mandate.status = MandateStatus.ACTIVE
+            mandate.started_at = datetime.utcnow().isoformat()
+        
+        return mandate
     
-    print(service.format_terms(terms))
+    def decline_mandate(self, mandate_id: str, reason: str = None) -> Mandate:
+        """
+        Decline a pending mandate (provider).
+        
+        Args:
+            mandate_id: Mandate to decline
+            reason: Decline reason
+            
+        Returns:
+            Updated Mandate
+        """
+        mandate = self._get_mandate(mandate_id)
+        
+        if mandate.status != MandateStatus.PENDING:
+            raise MandateError(f"Mandate {mandate_id} is not in PENDING state")
+        
+        mandate.status = MandateStatus.CANCELLED
+        return mandate
     
-    # Create mandate
-    mandate = service.create_mandate(terms)
-    print("\n" + service.format_mandate(mandate))
+    def start_mandate(self, mandate_id: str) -> Mandate:
+        """
+        Start work on an accepted mandate.
+        
+        Args:
+            mandate_id: Mandate to start
+            
+        Returns:
+            Updated Mandate
+        """
+        mandate = self._get_mandate(mandate_id)
+        
+        if mandate.status != MandateStatus.ACCEPTED:
+            raise MandateError(f"Mandate {mandate_id} is not in ACCEPTED state")
+        
+        mandate.status = MandateStatus.ACTIVE
+        mandate.started_at = datetime.utcnow().isoformat()
+        
+        return mandate
     
-    # Update status
-    mandate.status = MandateStatus.FUNDED
-    mandate.escrow_address = "escrow-7nYHz..."
-    print("\n" + service.format_mandate(mandate))
+    def request_revision(
+        self,
+        mandate_id: str,
+        notes: str,
+    ) -> Mandate:
+        """
+        Request a revision (renter).
+        
+        Args:
+            mandate_id: Mandate to revise
+            notes: Revision notes
+            
+        Returns:
+            Updated Mandate
+        """
+        mandate = self._get_mandate(mandate_id)
+        
+        if mandate.status != MandateStatus.ACTIVE:
+            raise MandateError(f"Mandate {mandate_id} is not in ACTIVE state")
+        
+        if mandate.revision_count >= mandate.terms.revisions:
+            raise MandateError(
+                f"Mandate {mandate_id} has exceeded revision limit"
+            )
+        
+        mandate.revision_count += 1
+        return mandate
+    
+    def complete_mandate(
+        self,
+        mandate_id: str,
+        deliverable_hash: str,
+    ) -> Mandate:
+        """
+        Mark mandate as complete (provider).
+        
+        Args:
+            mandate_id: Mandate to complete
+            deliverable_hash: SHA256 hash of deliverables
+            
+        Returns:
+            Updated Mandate
+        """
+        mandate = self._get_mandate(mandate_id)
+        
+        if mandate.status != MandateStatus.ACTIVE:
+            raise MandateError(f"Mandate {mandate_id} is not in ACTIVE state")
+        
+        mandate.status = MandateStatus.COMPLETED
+        mandate.completed_at = datetime.utcnow().isoformat()
+        mandate.deliverable_hash = deliverable_hash
+        
+        return mandate
+    
+    def extend_deadline(
+        self,
+        mandate_id: str,
+        additional_hours: int,
+    ) -> Mandate:
+        """
+        Request deadline extension.
+        
+        Args:
+            mandate_id: Mandate to extend
+            additional_hours: Hours to add
+            
+        Returns:
+            Updated Mandate
+        """
+        mandate = self._get_mandate(mandate_id)
+        
+        if mandate.status not in [MandateStatus.ACTIVE, MandateStatus.ACCEPTED]:
+            raise MandateError(
+                f"Mandate {mandate_id} cannot be extended from {mandate.status.value} state"
+            )
+        
+        current_deadline = datetime.fromisoformat(mandate.deadline)
+        new_deadline = current_deadline + timedelta(hours=additional_hours)
+        
+        mandate.deadline = new_deadline.isoformat()
+        mandate.extended_deadline = new_deadline.isoformat()
+        mandate.status = MandateStatus.EXTENDED
+        
+        return mandate
+    
+    def cancel_mandate(self, mandate_id: str) -> Mandate:
+        """
+        Cancel a mandate.
+        
+        Args:
+            mandate_id: Mandate to cancel
+            
+        Returns:
+            Updated Mandate
+        """
+        mandate = self._get_mandate(mandate_id)
+        
+        if mandate.status not in [MandateStatus.DRAFT, MandateStatus.PENDING]:
+            raise MandateError(
+                f"Mandate {mandate_id} can only be cancelled from DRAFT or PENDING state"
+            )
+        
+        mandate.status = MandateStatus.CANCELLED
+        return mandate
+    
+    # ============ Rating Operations ============
+    
+    def rate_mandate(
+        self,
+        mandate_id: str,
+        renter_rating: int = None,
+        provider_rating: int = None,
+    ) -> Mandate:
+        """
+        Rate a completed mandate.
+        
+        Args:
+            mandate_id: Completed mandate
+            renter_rating: Rating for renter (1-5)
+            provider_rating: Rating for provider (1-5)
+            
+        Returns:
+            Updated Mandate
+        """
+        mandate = self._get_mandate(mandate_id)
+        
+        if mandate.status != MandateStatus.COMPLETED:
+            raise MandateError(f"Mandate {mandate_id} is not COMPLETED")
+        
+        if renter_rating:
+            if not 1 <= renter_rating <= 5:
+                raise MandateError("Rating must be 1-5")
+            mandate.renter_rating = renter_rating
+        
+        if provider_rating:
+            if not 1 <= provider_rating <= 5:
+                raise MandateError("Rating must be 1-5")
+            mandate.provider_rating = provider_rating
+        
+        return mandate
+    
+    # ============ Escrow Integration ============
+    
+    def link_escrow(self, mandate_id: str, escrow_id: str) -> Mandate:
+        """
+        Link an escrow to a mandate.
+        
+        Args:
+            mandate_id: Mandate to link
+            escrow_id: Escrow ID
+            
+        Returns:
+            Updated Mandate
+        """
+        mandate = self._get_mandate(mandate_id)
+        mandate.escrow_id = escrow_id
+        
+        # Auto-start if escrow is funded
+        if mandate.status == MandateStatus.ACCEPTED:
+            mandate.status = MandateStatus.ACTIVE
+            mandate.started_at = datetime.utcnow().isoformat()
+        
+        return mandate
+    
+    # ============ Helpers ============
+    
+    def _get_mandate(self, mandate_id: str) -> Mandate:
+        """Get mandate or raise error"""
+        if mandate_id not in self._mandates:
+            raise MandateError(f"Mandate {mandate_id} not found")
+        return self._mandates[mandate_id]
+    
+    def export_mandates_json(self, address: str = None) -> str:
+        """Export mandates as JSON"""
+        if address:
+            mandates = self.get_mandates_by_participant(address)
+        else:
+            mandates = list(self._mandates.values())
+        
+        return json.dumps(
+            [m.to_dict() for m in mandates],
+            indent=2,
+        )
 
 
-if __name__ == "__main__":
-    demo()
+def get_mandate_skill(mock: bool = True) -> MandateSkill:
+    """
+    Get a MandateSkill instance.
+    
+    Args:
+        mock: Use mock data
+        
+    Returns:
+        Configured MandateSkill
+    """
+    return MandateSkill(mock=mock)
