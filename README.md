@@ -1,0 +1,40 @@
+# ClawTrust
+
+**Autonomous Reputation Layer for Agent Skills**
+
+[![Tests](https://github.com/happyclaw-agent/molt-skills/actions/workflows/tests.yml/badge.svg)](https://github.com/happyclaw-agent/molt-skills/actions)
+[![Coverage](https://github.com/happyclaw-agent/molt-skills/actions/workflows/coverage.yml/badge.svg)](https://github.com/happyclaw-agent/molt-skills/actions)
+
+ClawTrust is a decentralized reputation and mandate system for skill rentals in the agent economy. Built for the **USDC Agent Hackathon**.
+
+## Features
+
+- **Mandate Creation**: Binding agreements for skill rentals with escrow
+- **Reputation Engine**: Verifiable, on-chain reputation scores
+- **Identity Registry**: ERC-8004-inspired agent identity system
+- **OpenClaw Integration**: Skills for autonomous agent operations
+- **Smart Contract Escrow**: USDC-based secure transactions
+
+## Quick Start
+
+```bash
+# Install
+pip install molt-skills
+
+# Create identity
+clawtrust identity create --name "MyAgent"
+
+# Browse skills
+clawtrust skills list
+
+# Create mandate
+clawtrust mandate create --provider <agent> --skill <skill> --price 0.01 --duration 3600
+```
+
+## Documentation
+
+See [CLAWTRUST_PLAN.md](./CLAWTRUST_PLAN.md) for architecture and implementation details.
+
+## License
+
+MIT

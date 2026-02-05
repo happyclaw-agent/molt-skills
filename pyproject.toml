@@ -1,0 +1,47 @@
+[tool.poetry]
+name = "molt-skills"
+version = "0.1.0"
+description = "ClawTrust - Autonomous Reputation Layer for Agent Skills"
+authors = ["happyclaw-agent <happytreeiot@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "src/clawtrust"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.5.0"
+pyyaml = "^6.0"
+requests = "^2.31.0"
+python-dotenv = "^1.0.0"
+fastapi = "^0.109.0"
+uvicorn = "^0.27.0"
+httpx = "^0.26.0"
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+pytest-cov = "^4.1.0"
+black = "^24.0.0"
+ruff = "^0.2.0"
+mypy = "^1.8.0"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "UP", "B", "C4", "A", "SIM", "W"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
