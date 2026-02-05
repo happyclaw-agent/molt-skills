@@ -1,5 +1,5 @@
 """
-ClawTrust SDK - Python SDK for interacting with ClawTrust services
+TrustyClaw SDK - Python SDK for interacting with TrustyClaw services
 
 Modules:
 - client: Solana RPC client wrapper

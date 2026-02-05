@@ -2,7 +2,7 @@
 Agent Identity Management
 
 Purpose:
-    Provides wallet-based identity management for ClawTrust agents.
+    Provides wallet-based identity management for TrustyClaw agents.
     Each agent is identified by their Solana wallet address.
     
 Capabilities:
@@ -39,7 +39,7 @@ class IdentityStatus(Enum):
 @dataclass
 class AgentIdentity:
     """
-    Represents an agent's identity in ClawTrust.
+    Represents an agent's identity in TrustyClaw.
     
     Each identity is tied to a Solana wallet address.
     Reputation scores track the agent's trustworthiness.
@@ -341,7 +341,7 @@ def demo():
     # Create identities for each wallet
     for role, address in WALLETS.items():
         identity = create_identity(
-            name=f"ClawTrust-{role.title()}",
+            name=f"TrustyClaw-{role.title()}",
             wallet_address=address,
             public_key=f"{role}-pubkey",
             email="happytreeiot@gmail.com",

@@ -12,9 +12,9 @@ Usage:
 import pytest
 from datetime import datetime
 
-from src.clawtrust.sdk.identity import AgentIdentity, IdentityManager, IdentityStatus
-from src.clawtrust.sdk.reputation import ReputationEngine, Review
-from src.clawtrust.sdk.escrow import (
+from src.trustyclaw.sdk.identity import AgentIdentity, IdentityManager, IdentityStatus
+from src.trustyclaw.sdk.reputation import ReputationEngine, Review
+from src.trustyclaw.sdk.escrow import (
     EscrowClient, EscrowTerms, EscrowState, EscrowAccount
 )
 
@@ -346,7 +346,7 @@ class TestEscrowClient:
     
     def test_create_escrow_terms_helper(self):
         """Test create_escrow_terms helper"""
-        from src.clawtrust.sdk.escrow import create_escrow_terms
+        from src.trustyclaw.sdk.escrow import create_escrow_terms
         
         terms = create_escrow_terms(
             skill_name="code-review",

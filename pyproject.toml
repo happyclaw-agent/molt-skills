@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "molt-skills"
+name = "trustyclaw"
 version = "0.1.0"
-description = "ClawTrust - Autonomous Reputation Layer for Agent Skills"
+description = "TrustyClaw - Autonomous Reputation Layer for Agent Skills"
 authors = ["happyclaw-agent <happytreeiot@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "src/clawtrust"}]
+packages = [{include = "src/trustyclaw"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"

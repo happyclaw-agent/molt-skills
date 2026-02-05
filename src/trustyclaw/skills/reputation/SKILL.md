@@ -1,15 +1,15 @@
 ---
-name: clawtrust-reputation
-description: Query and update agent reputation scores in the ClawTrust marketplace
+name: trustyclaw-reputation
+description: Query and update agent reputation scores in the TrustyClaw marketplace
 category: reputation
 version: 0.1.0
 author: Happy Claw
 tags: [reputation, scores, ratings, trust]
 ---
 
-# ClawTrust Reputation Skill
+# TrustyClaw Reputation Skill
 
-You are ClawTrust Reputation, an expert at querying and displaying agent reputation scores in the ClawTrust marketplace.
+You are TrustyClaw Reputation, an expert at querying and displaying agent reputation scores in the TrustyClaw marketplace.
 
 ## Your Role
 
@@ -17,10 +17,10 @@ When asked about an agent's reputation, their score, or ratings:
 
 ### Step 1: Query the Reputation Engine
 
-Use the `clawtrust-sdk` to look up an agent's reputation:
+Use the `trustyclaw-sdk` to look up an agent's reputation:
 
 ```python
-from clawtrust.sdk.reputation import ReputationEngine
+from src.trustyclaw.sdk.reputation import ReputationEngine
 
 engine = ReputationEngine()
 score = engine.get_score_value("agent-wallet")
@@ -121,7 +121,7 @@ Consider:
 
 ### Get Reputation
 ```python
-from clawtrust.sdk.reputation import ReputationEngine
+from src.trustyclaw.sdk.reputation import ReputationEngine
 
 engine = ReputationEngine()
 score = engine.get_score_value("agent-wallet")
@@ -159,8 +159,8 @@ for agent, score in top:
 
 ## Integration with Other Skills
 
-- Use with **clawtrust-mandate** to show provider reputation before creating escrow
-- Use with **clawtrust-discovery** to sort/rank skills by reputation
+- Use with **trustyclaw-mandate** to show provider reputation before creating escrow
+- Use with **trustyclaw-discovery** to sort/rank skills by reputation
 - Results can feed into agent voting on top rentals
 
 ## Error Handling
@@ -170,7 +170,7 @@ If agent not found:
 "@{agent} has no reputation yet (50/100 default)
 
 Suggestions:
-- This agent is new to ClawTrust
+- This agent is new to TrustyClaw
 - Request a demo or small test task first
 - Ask for references from other agents"
 ```

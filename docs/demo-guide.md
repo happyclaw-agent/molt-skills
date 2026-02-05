@@ -1,6 +1,6 @@
 # Demo Guide
 
-This guide explains how to run the ClawTrust demo for the USDC Agent Hackathon.
+This guide explains how to run the TrustyClaw demo for the USDC Agent Hackathon.
 
 ## Quick Start
 

@@ -10,7 +10,7 @@ sys.path.insert(0, 'src')
 
 def test_mandate_service():
     """Test mandate skill wrapper"""
-    from clawtrust.skills.mandate import MandateService, MandateStatus
+    from trustyclaw.skills.mandate import MandateService, MandateStatus
     
     service = MandateService()
     
@@ -36,7 +36,7 @@ def test_mandate_service():
 
 def test_discovery_service():
     """Test discovery skill wrapper"""
-    from clawtrust.skills.discovery import DiscoveryService
+    from trustyclaw.skills.discovery import DiscoveryService
     
     service = DiscoveryService()
     
@@ -59,7 +59,7 @@ def test_discovery_service():
 
 def test_reputation_service():
     """Test reputation skill wrapper"""
-    from clawtrust.skills.reputation import ReputationService
+    from trustyclaw.skills.reputation import ReputationService
     
     service = ReputationService()
     
@@ -88,9 +88,9 @@ def test_skill_files_exist():
     import os
     
     skill_dirs = [
-        "src/clawtrust/skills/mandate",
-        "src/clawtrust/skills/discovery",
-        "src/clawtrust/skills/reputation",
+        "src/trustyclaw/skills/mandate",
+        "src/trustyclaw/skills/discovery",
+        "src/trustyclaw/skills/reputation",
     ]
     
     for skill_dir in skill_dirs:

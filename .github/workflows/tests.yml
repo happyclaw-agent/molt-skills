@@ -25,9 +25,9 @@ jobs:
       - name: Verify imports
         run: |
           python -c "
-          from src.clawtrust.sdk.client import SolanaClient
-          from src.clawtrust.sdk.identity import AgentIdentity
-          from src.clawtrust.sdk.reputation import ReputationEngine
-          from src.clawtrust.sdk.escrow import EscrowClient
+          from src.trustyclaw.sdk.client import SolanaClient
+          from src.trustyclaw.sdk.identity import AgentIdentity
+          from src.trustyclaw.sdk.reputation import ReputationEngine
+          from src.trustyclaw.sdk.escrow import EscrowClient
           print('All imports successful')
           "

@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from src.clawtrust.core.identity import (
+from src.trustyclaw.core.identity import (
     AgentIdentity,
     IdentityStatus,
     create_agent_identity,

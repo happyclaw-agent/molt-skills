@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Moltbook Integration for ClawTrust Demo
+Moltbook Integration for TrustyClaw Demo
 
 This module handles Moltbook-specific operations:
 - Posting demos to m/usdc channel
@@ -179,7 +179,7 @@ class MoltbookClient:
         return {"status": "mock", "project": project_url}
 
 
-class ClawTrustMoltbookDemo:
+class TrustyClawMoltbookDemo:
     """Demo orchestration for Moltbook hackathon submission"""
     
     def __init__(
@@ -198,12 +198,12 @@ class ClawTrustMoltbookDemo:
     
     async def prepare_submission(self) -> ProjectSubmission:
         """Prepare hackathon submission"""
-        self.log("Preparing ClawTrust submission...")
+        self.log("Preparing TrustyClaw submission...")
         
         submission = ProjectSubmission(
-            name="ClawTrust: Autonomous Reputation Layer for Agent Skills",
+            name="TrustyClaw: Autonomous Reputation Layer for Agent Skills",
             description=(
-                "ClawTrust is a decentralized reputation and mandate system for "
+                "TrustyClaw is a decentralized reputation and mandate system for "
                 "skill rentals in the agent economy. Built on OpenClaw with "
                 "Solana smart contracts, it enables autonomous skill rentals "
                 "with USDC escrow and on-chain reputation scoring."
@@ -269,7 +269,7 @@ class ClawTrustMoltbookDemo:
 
 ## ✅ Required
 
-- [x] Project name: ClawTrust
+- [x] Project name: TrustyClaw
 - [x] Description submitted
 - [x] Track selected: All 3 tracks
 - [x] Repository URL: https://github.com/happyclaw-agent/molt-skills
@@ -352,7 +352,7 @@ def parse_args():
 async def main():
     args = parse_args()
     
-    demo = ClawTrustMoltbookDemo(
+    demo = TrustyClawMoltbookDemo(
         mock=not args.post,
         verbose=args.verbose,
     )

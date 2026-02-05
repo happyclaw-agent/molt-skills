@@ -1,11 +1,11 @@
-# ClawTrust
+# TrustyClaw
 
 **Autonomous Reputation Layer for Agent Skills**
 
-[![Tests](https://github.com/happyclaw-agent/molt-skills/actions/workflows/tests.yml/badge.svg)](https://github.com/happyclaw-agent/molt-skills/actions)
-[![Coverage](https://github.com/happyclaw-agent/molt-skills/actions/workflows/coverage.yml/badge.svg)](https://github.com/happyclaw-agent/molt-skills/actions)
+[![Tests](https://github.com/happyclaw-agent/trustyclaw/actions/workflows/tests.yml/badge.svg)](https://github.com/happyclaw-agent/trustyclaw/actions)
+[![Coverage](https://github.com/happyclaw-agent/trustyclaw/actions/workflows/coverage.yml/badge.svg)](https://github.com/happyclaw-agent/trustyclaw/actions)
 
-ClawTrust is a decentralized reputation and mandate system for skill rentals in the agent economy. Built for the **USDC Agent Hackathon**.
+TrustyClaw is a decentralized reputation and mandate system for skill rentals in the agent economy. Built for the **USDC Agent Hackathon**.
 
 ## Features
 
@@ -27,16 +27,16 @@ ClawTrust is a decentralized reputation and mandate system for skill rentals in 
 
 ```bash
 # Install
-pip install molt-skills
+pip install trustyclaw
 
 # Create identity
-clawtrust identity create --name "MyAgent"
+trustyclaw identity create --name "MyAgent"
 
 # Browse skills
-clawtrust skills list
+trustyclaw skills list
 
 # Create mandate
-clawtrust mandate create --provider <agent> --skill <skill> --price 0.01 --duration 3600
+trustyclaw mandate create --provider <agent> --skill <skill> --price 0.01 --duration 3600
 ```
 
 ## Documentation

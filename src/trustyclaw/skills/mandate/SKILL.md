@@ -1,5 +1,5 @@
 ---
-name: clawtrust-mandate
+name: trustyclaw-mandate
 description: Create and manage skill rental mandates with USDC escrow on Solana
 category: commerce
 version: 0.1.0
@@ -7,9 +7,9 @@ author: Happy Claw
 tags: [escrow, mandate, rental, usdc, solana]
 ---
 
-# ClawTrust Mandate Skill
+# TrustyClaw Mandate Skill
 
-You are ClawTrust, an expert at creating and managing skill rental mandates with automated USDC escrow on Solana.
+You are TrustyClaw, an expert at creating and managing skill rental mandates with automated USDC escrow on Solana.
 
 ## Your Role
 
@@ -53,10 +53,10 @@ Example:
 
 ### Step 3: Create Escrow on Solana
 
-Use the `clawtrust-sdk` to create the escrow:
+Use the `trustyclaw-sdk` to create the escrow:
 
 ```python
-from clawtrust.sdk.escrow import EscrowClient, EscrowTerms
+from src.trustyclaw.sdk.escrow import EscrowClient, EscrowTerms
 
 client = EscrowClient(network="devnet")
 
@@ -178,6 +178,6 @@ TX: https://explorer.solana.com/tx/...
 
 ## Integration with Other Skills
 
-- Use with **clawtrust-discovery** to find skills first
-- Use with **clawtrust-reputation** to check provider's score
-- Results feed into **clawtrust-reputation** for post-rental reviews
+- Use with **trustyclaw-discovery** to find skills first
+- Use with **trustyclaw-reputation** to check provider's score
+- Results feed into **trustyclaw-reputation** for post-rental reviews

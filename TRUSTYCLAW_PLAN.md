@@ -1,8 +1,8 @@
-# ClawTrust MVP: 3-Day Sprint Plan
+# TrustyClaw MVP: 3-Day Sprint Plan
 
 ## Executive Summary
 
-**ClawTrust MVP** is a minimal viable prototype for the USDC Agent Hackathon, demonstrating:
+**TrustyClaw MVP** is a minimal viable prototype for the USDC Agent Hackathon, demonstrating:
 - Autonomous skill rentals with USDC escrow
 - Simple reputation scoring
 - OpenClaw skill integration

@@ -12,7 +12,7 @@ Usage:
 import pytest
 from datetime import datetime, timedelta
 
-from src.clawtrust.sdk.escrow import (
+from src.trustyclaw.sdk.escrow import (
     EscrowClient,
     EscrowTerms,
     EscrowState,
@@ -176,7 +176,7 @@ class TestEscrowClient:
     
     def test_create_escrow_terms_helper(self):
         """Test create_escrow_terms helper function"""
-        from src.clawtrust.sdk.escrow import create_escrow_terms
+        from src.trustyclaw.sdk.escrow import create_escrow_terms
         
         terms = create_escrow_terms(
             skill_name="code-review",

@@ -1,5 +1,5 @@
 """
-Discovery Skill Wrapper for ClawTrust
+Discovery Skill Wrapper for TrustyClaw
 
 This module provides Python functions for the Discovery OpenClaw skill.
 """

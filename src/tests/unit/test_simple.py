@@ -11,7 +11,7 @@ sys.path.insert(0, 'src')
 
 # Test identity creation
 def test_identity_create():
-    from clawtrust.sdk.identity import AgentIdentity, IdentityStatus
+    from trustyclaw.sdk.identity import AgentIdentity, IdentityStatus
     identity = AgentIdentity(
         name="TestAgent",
         wallet_address="test-wallet",
@@ -23,7 +23,7 @@ def test_identity_create():
 
 # Test identity to dict
 def test_identity_to_dict():
-    from clawtrust.sdk.identity import AgentIdentity
+    from trustyclaw.sdk.identity import AgentIdentity
     identity = AgentIdentity(
         name="TestAgent",
         wallet_address="test-wallet",
@@ -35,7 +35,7 @@ def test_identity_to_dict():
 
 # Test identity from dict
 def test_identity_from_dict():
-    from clawtrust.sdk.identity import AgentIdentity
+    from trustyclaw.sdk.identity import AgentIdentity
     data = {
         "id": "test-id",
         "name": "FromDict",
@@ -50,14 +50,14 @@ def test_identity_from_dict():
 
 # Test reputation create
 def test_reputation_create():
-    from clawtrust.sdk.reputation import ReputationEngine, Review
+    from trustyclaw.sdk.reputation import ReputationEngine, Review
     engine = ReputationEngine()
     assert engine is not None
     print("✓ test_reputation_create passed")
 
 # Test review validation
 def test_review_validate():
-    from clawtrust.sdk.reputation import Review
+    from trustyclaw.sdk.reputation import Review
     review = Review(
         provider="agent",
         renter="other",
@@ -69,7 +69,7 @@ def test_review_validate():
 
 # Test add review
 def test_add_review():
-    from clawtrust.sdk.reputation import ReputationEngine, Review
+    from trustyclaw.sdk.reputation import ReputationEngine, Review
     engine = ReputationEngine()
     review = Review(
         provider="agent",
@@ -84,7 +84,7 @@ def test_add_review():
 
 # Test escrow terms
 def test_escrow_terms():
-    from clawtrust.sdk.escrow import EscrowTerms
+    from trustyclaw.sdk.escrow import EscrowTerms
     terms = EscrowTerms(
         skill_name="test",
         price_usdc=10000,
@@ -96,7 +96,7 @@ def test_escrow_terms():
 
 # Test escrow state
 def test_escrow_state():
-    from clawtrust.sdk.escrow import EscrowState
+    from trustyclaw.sdk.escrow import EscrowState
     assert EscrowState.CREATED.value == "created"
     assert EscrowState.FUNDED.value == "funded"
     assert EscrowState.COMPLETED.value == "completed"
@@ -104,7 +104,7 @@ def test_escrow_state():
 
 # Test escrow client
 def test_escrow_client():
-    from clawtrust.sdk.escrow import EscrowClient
+    from trustyclaw.sdk.escrow import EscrowClient
     client = EscrowClient()
     assert client.network == "devnet"
     assert client.USDC_MINT == "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
@@ -112,7 +112,7 @@ def test_escrow_client():
 
 # Test create escrow terms helper
 def test_create_escrow_terms():
-    from clawtrust.sdk.escrow import create_escrow_terms
+    from trustyclaw.sdk.escrow import create_escrow_terms
     terms = create_escrow_terms(
         skill_name="test",
         price_usdc=0.05,

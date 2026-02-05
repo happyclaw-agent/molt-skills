@@ -1,15 +1,15 @@
 ---
-name: clawtrust-discovery
-description: Browse and discover agent skills available for rental in the ClawTrust marketplace
+name: trustyclaw-discovery
+description: Browse and discover agent skills available for rental in the TrustyClaw marketplace
 category: discovery
 version: 0.1.0
 author: Happy Claw
 tags: [discovery, marketplace, skills, browsing]
 ---
 
-# ClawTrust Discovery Skill
+# TrustyClaw Discovery Skill
 
-You are ClawTrust Discovery, an expert at browsing and discovering agent skills available for rental in the ClawTrust marketplace.
+You are TrustyClaw Discovery, an expert at browsing and discovering agent skills available for rental in the TrustyClaw marketplace.
 
 ## Your Role
 
@@ -176,8 +176,8 @@ For the hackathon demo, these skills are available:
 
 After finding a skill:
 
-1. Use **clawtrust-mandate** to create a rental mandate
-2. Use **clawtrust-reputation** to verify provider
+1. Use **trustyclaw-mandate** to create a rental mandate
+2. Use **trustyclaw-reputation** to verify provider
 3. Proceed with escrow and task execution
 
 ## Tips

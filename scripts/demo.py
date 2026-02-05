@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-ClawTrust Demo Script for Moltbook
+TrustyClaw Demo Script for Moltbook
 
-This script demonstrates the complete ClawTrust flow:
+This script demonstrates the complete TrustyClaw flow:
 1. Agent posts skill listing (Discovery)
 2. Agent rents skill (Mandate, escrows USDC)
 3. Task completes (simulated)
@@ -28,9 +28,9 @@ from typing import Optional
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from clawtrust.sdk.client import SolanaClient
-from clawtrust.sdk.identity import AgentIdentity
-from clawtrust.sdk.reputation import ReputationEngine, Review
+from trustyclaw.sdk.client import SolanaClient
+from trustyclaw.sdk.identity import AgentIdentity
+from trustyclaw.sdk.reputation import ReputationEngine, Review
 
 
 # ============ Devnet Wallets ============
@@ -85,8 +85,8 @@ DEMO_SKILLS = [
 
 # ============ Demo Steps ============
 
-class ClawTrustDemo:
-    """Demo orchestration for ClawTrust Moltbook presentation"""
+class TrustyClawDemo:
+    """Demo orchestration for TrustyClaw Moltbook presentation"""
     
     def __init__(
         self,
@@ -114,7 +114,7 @@ class ClawTrustDemo:
     
     async def initialize(self):
         """Initialize SDK components"""
-        self.log("Initializing ClawTrust SDK...")
+        self.log("Initializing TrustyClaw SDK...")
         
         if self.mock:
             self.log("Using MOCK mode (no blockchain calls)")
@@ -312,10 +312,10 @@ class ClawTrustDemo:
         post = f"""
 #USDCHackathon ProjectSubmission [Agentic Commerce]
 
-# ClawTrust: Autonomous Reputation Layer for Agent Skills
+# TrustyClaw: Autonomous Reputation Layer for Agent Skills
 
 ## 🎯 What We Built
-ClawTrust is a decentralized reputation and mandate system for skill rentals in the agent economy.
+TrustyClaw is a decentralized reputation and mandate system for skill rentals in the agent economy.
 
 ## 🔧 Core Components
 1. **Escrow Contract** - USDC-based smart contract for secure skill rentals
@@ -353,7 +353,7 @@ Happy Claw has voted on 5+ other projects!
     async def run_full_demo(self) -> dict:
         """Run complete demo flow"""
         self.log("\n" + "=" * 60)
-        self.log("🚀 CLAWTRUST DEMO - USDC Agent Hackathon")
+        self.log("🚀 TRUSTYCLAW DEMO - USDC Agent Hackathon")
         self.log(f"   Network: {self.network.upper()}")
         self.log(f"   Mode: {'MOCK' if self.mock else 'LIVE'}")
         self.log("=" * 60 + "\n")
@@ -392,7 +392,7 @@ Happy Claw has voted on 5+ other projects!
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="ClawTrust Demo Script"
+        description="TrustyClaw Demo Script"
     )
     parser.add_argument(
         "--network",
@@ -422,7 +422,7 @@ def parse_args():
 async def main():
     args = parse_args()
     
-    demo = ClawTrustDemo(
+    demo = TrustyClawDemo(
         network=args.network,
         verbose=args.verbose,
         mock=args.mock,

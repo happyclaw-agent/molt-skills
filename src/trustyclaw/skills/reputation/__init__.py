@@ -1,5 +1,5 @@
 """
-Reputation Skill Wrapper for ClawTrust
+Reputation Skill Wrapper for TrustyClaw
 
 Provides Python functions for the Reputation OpenClaw skill.
 """

@@ -2,7 +2,7 @@
 Escrow Contract Interface
 
 Purpose:
-    Python bindings for the ClawTrust USDC escrow contract on Solana.
+    Python bindings for the TrustyClaw USDC escrow contract on Solana.
     Handles deposit, lock, release, and refund operations.
     
 Capabilities:
@@ -135,7 +135,7 @@ USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 
 class EscrowClient:
     """
-    Python client for the ClawTrust Escrow contract.
+    Python client for the TrustyClaw Escrow contract.
     
     Provides async methods for all escrow operations.
     Connect to devnet for testing, mainnet for production.
@@ -439,7 +439,7 @@ async def demo():
     RENTER = "3WaHbF7k9ced4d2wA8caUHq2v57ujD4J2c57L8wZXfhN"
     PROVIDER = "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B"
     
-    print("=== ClawTrust Escrow Demo ===")
+    print("=== TrustyClaw Escrow Demo ===")
     print(f"Agent (Happy Claw): {AGENT[:16]}...")
     print(f"Renter: {RENTER[:16]}...")
     print(f"Provider: {PROVIDER[:16]}...")

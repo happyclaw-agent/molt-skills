@@ -2,7 +2,7 @@
 Reputation Engine
 
 Purpose:
-    Tracks and calculates reputation scores for ClawTrust agents.
+    Tracks and calculates reputation scores for TrustyClaw agents.
     Scores are based on reviews, on-time delivery, and volume.
     
 Capabilities:
@@ -137,7 +137,7 @@ class ReputationScore:
 
 class ReputationEngine:
     """
-    Manages reputation scores for ClawTrust agents.
+    Manages reputation scores for TrustyClaw agents.
     
     Provides methods to:
     - Add reviews

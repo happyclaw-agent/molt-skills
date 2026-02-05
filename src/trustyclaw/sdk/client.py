@@ -3,7 +3,7 @@ Solana RPC Client Wrapper
 
 Purpose:
     Provides a simple, type-safe interface for Solana blockchain interactions.
-    Designed for use with the ClawTrust escrow system.
+    Designed for use with the TrustyClaw escrow system.
     
 Capabilities:
     - Connect to Solana mainnet, testnet, or devnet
@@ -52,7 +52,7 @@ class ClientConfig:
 
 class SolanaClient:
     """
-    Solana RPC client for ClawTrust.
+    Solana RPC client for TrustyClaw.
     
     This client provides a clean async interface to Solana RPC endpoints.
     Connect to devnet/testnet for testing, mainnet for production.

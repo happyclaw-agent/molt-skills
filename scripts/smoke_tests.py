@@ -16,10 +16,10 @@ from datetime import datetime
 # Add src to path
 sys.path.insert(0, 'src')
 
-from clawtrust.sdk.client import SolanaClient, ClientConfig, Network
-from clawtrust.sdk.identity import AgentIdentity, IdentityManager, IdentityStatus
-from clawtrust.sdk.reputation import ReputationEngine, Review
-from clawtrust.sdk.escrow import (
+from trustyclaw.sdk.client import SolanaClient, ClientConfig, Network
+from trustyclaw.sdk.identity import AgentIdentity, IdentityManager, IdentityStatus
+from trustyclaw.sdk.reputation import ReputationEngine, Review
+from trustyclaw.sdk.escrow import (
     EscrowClient, EscrowTerms, EscrowState, EscrowAccount
 )
 
@@ -28,10 +28,10 @@ def test_imports():
     """Verify all modules import correctly"""
     print("Testing imports...")
     try:
-        from clawtrust.sdk.client import SolanaClient, ClientConfig, Network
-        from clawtrust.sdk.identity import AgentIdentity, IdentityManager
-        from clawtrust.sdk.reputation import ReputationEngine, Review
-        from clawtrust.sdk.escrow import EscrowClient, EscrowTerms, EscrowState
+        from trustyclaw.sdk.client import SolanaClient, ClientConfig, Network
+        from trustyclaw.sdk.identity import AgentIdentity, IdentityManager
+        from trustyclaw.sdk.reputation import ReputationEngine, Review
+        from trustyclaw.sdk.escrow import EscrowClient, EscrowTerms, EscrowState
         print("  ✓ All imports successful")
         return True
     except Exception as e:
@@ -268,7 +268,7 @@ async def run_async_tests():
 def main():
     """Run all smoke tests"""
     print("=" * 60)
-    print("ClawTrust SDK Smoke Tests")
+    print("TrustyClaw SDK Smoke Tests")
     print("=" * 60)
     
     results = []
