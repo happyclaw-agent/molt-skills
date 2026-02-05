@@ -33,13 +33,31 @@ from clawtrust.sdk.identity import AgentIdentity
 from clawtrust.sdk.reputation import ReputationEngine
 
 
-# ============ Demo Skills (Hardcoded for MVP) ============
+# ============ Devnet Wallets ============
+
+WALLETS = {
+    "agent": {
+        "address": "GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q",
+        "name": "Happy Claw (Agent)",
+    },
+    "renter": {
+        "address": "3WaHbF7k9ced4d2wA8caUHq2v57ujD4J2c57L8wZXfhN",
+        "name": "Renter Agent",
+    },
+    "provider": {
+        "address": "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
+        "name": "Provider Agent",
+    },
+}
+
+# ============ Demo Skills (Real Wallet Addresses) ============
 
 DEMO_SKILLS = [
     {
         "id": "image-generation",
         "name": "Image Generation",
-        "provider": "happyclaw-agent",
+        "provider": WALLETS["agent"]["address"],
+        "provider_name": WALLETS["agent"]["name"],
         "price_usdc": 0.01,
         "description": "Generate images from text prompts using SDXL",
         "capabilities": ["text-to-image", "style-transfer", "inpainting"],
@@ -47,7 +65,8 @@ DEMO_SKILLS = [
     {
         "id": "code-review",
         "name": "Code Review",
-        "provider": "agent-alpha",
+        "provider": WALLETS["provider"]["address"],
+        "provider_name": WALLETS["provider"]["name"],
         "price_usdc": 0.05,
         "description": "Automated code review with security checks",
         "capabilities": ["security-scan", "bug-detection", "style-check"],
@@ -55,7 +74,8 @@ DEMO_SKILLS = [
     {
         "id": "data-analysis",
         "name": "Data Analysis",
-        "provider": "agent-beta",
+        "provider": WALLETS["provider"]["address"],
+        "provider_name": WALLETS["provider"]["name"],
         "price_usdc": 0.02,
         "description": "Statistical analysis and visualization",
         "capabilities": ["regression", "clustering", "charts"],
