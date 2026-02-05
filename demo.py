@@ -119,7 +119,7 @@ def demo_reviews():
     """Demo review system"""
     print_header("REVIEW SYSTEM")
     
-    reviews = get_review_service(mock=True)
+    reviews = get_review_service()
     
     print_section("Create Review")
     review = reviews.create_review(
@@ -155,7 +155,7 @@ def demo_mandate():
     """Demo mandate skill"""
     print_header("MANDATE SKILL")
     
-    mandate = get_mandate_skill(mock=True)
+    mandate = get_mandate_skill()
     
     print_section("Create Mandate")
     new_mandate = mandate.create_mandate(
@@ -199,7 +199,7 @@ def demo_discovery():
     """Demo discovery skill"""
     print_header("DISCOVERY SKILL")
     
-    discovery = get_discovery_skill(mock=True)
+    discovery = get_discovery_skill()
     
     print_section("Browse Skills")
     skills = discovery.browse_skills()
@@ -234,7 +234,7 @@ def demo_reputation():
     """Demo reputation skill"""
     print_header("REPUTATION SKILL")
     
-    reputation = get_reputation_skill(mock=True)
+    reputation = get_reputation_skill()
     
     print_section("Agent Reputation")
     rep = reputation.get_agent_reputation(PROVIDER_WALLET)

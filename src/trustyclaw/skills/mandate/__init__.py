@@ -106,12 +106,9 @@ class MandateSkill:
     - Complete with deliverables
     """
     
-    def __init__(self, mock: bool = True):
-        self.mock = mock
+    def __init__(self):
         self._mandates: Dict[str, Mandate] = {}
-        
-        if mock:
-            self._init_mock_data()
+        self._init_mock_data()
     
     def _init_mock_data(self):
         """Initialize mock mandates"""
@@ -484,14 +481,11 @@ class MandateSkill:
         )
 
 
-def get_mandate_skill(mock: bool = True) -> MandateSkill:
+def get_mandate_skill() -> MandateSkill:
     """
     Get a MandateSkill instance.
     
-    Args:
-        mock: Use mock data
-        
     Returns:
         Configured MandateSkill
     """
-    return MandateSkill(mock=mock)
+    return MandateSkill()

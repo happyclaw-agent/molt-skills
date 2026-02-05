@@ -127,14 +127,11 @@ class DiscoverySkill:
     - Recommendations
     """
     
-    def __init__(self, mock: bool = True):
-        self.mock = mock
+    def __init__(self):
         self._agents: Dict[str, Agent] = {}
         self._skills: Dict[str, Skill] = {}
-        self._agent_by_skill: Dict[str, List[str]] = {}  # skill_id -> agent addresses
-        
-        if mock:
-            self._init_mock_data()
+        self._agent_by_skill: Dict[str, List[str]] = {}
+        self._init_mock_data()
     
     def _init_mock_data(self):
         """Initialize with sample agents and skills"""
@@ -553,14 +550,11 @@ class DiscoverySkill:
         return json.dumps([s.to_dict() for s in skills], indent=2)
 
 
-def get_discovery_skill(mock: bool = True) -> DiscoverySkill:
+def get_discovery_skill() -> DiscoverySkill:
     """
     Get a DiscoverySkill instance.
     
-    Args:
-        mock: Use mock data
-        
     Returns:
         Configured DiscoverySkill
     """
-    return DiscoverySkill(mock=mock)
+    return DiscoverySkill()

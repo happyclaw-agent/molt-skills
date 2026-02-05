@@ -1,7 +1,7 @@
 """
 Solana RPC Client for TrustyClaw
 
-Provides real Solana blockchain integration for escrow operations.
+Real Solana blockchain integration for escrow operations.
 """
 
 from dataclasses import dataclass
@@ -10,16 +10,12 @@ from enum import Enum
 import os
 import base64
 
-try:
-    from solana.rpc.api import Client as SolanaClient
-    from solana.rpc.commitment import Confirmed, Finalized
-    from solana.rpc.types import TxOpts
-    from solana.keypair import Keypair
-    from solana.publickey import PublicKey
-    from solana.transaction import Transaction
-    HAS_SOLANA = True
-except ImportError:
-    HAS_SOLANA = False
+from solana.rpc.api import Client as SolanaClient
+from solana.rpc.commitment import Confirmed, Finalized
+from solana.rpc.types import TxOpts
+from solana.keypair import Keypair
+from solana.publickey import PublicKey
+from solana.transaction import Transaction
 
 
 class Network(Enum):
@@ -70,11 +66,7 @@ class SolanaRPCClient:
     ):
         self.network = network
         self.commitment = commitment
-        
-        if HAS_SOLANA:
-            self.client = SolanaClient(str(network.value))
-        else:
-            self.client = None
+        self.client = SolanaClient(str(network.value))
         
         self._keypair: Optional[Keypair] = None
         if keypair_path and os.path.exists(keypair_path):
@@ -82,16 +74,12 @@ class SolanaRPCClient:
     
     def load_keypair(self, path: str) -> None:
         """Load a keypair from file"""
-        if not HAS_SOLANA:
-            return
-        
         with open(path, 'rb') as f:
             keypair_data = f.read()
         
         try:
             self._keypair = Keypair.from_secret_key(keypair_data)
         except Exception:
-            import base64
             secret = base64.b64decode(keypair_data)
             self._keypair = Keypair.from_secret_key(secret)
     
@@ -104,121 +92,72 @@ class SolanaRPCClient:
     
     def get_balance(self, address: str) -> WalletInfo:
         """Get SOL and USDC balance for an address"""
-        if not HAS_SOLANA or not self.client:
-            return WalletInfo(
-                address=address,
-                lamports=1000000000,
-                usdc_balance=100.0,
-            )
+        resp = self.client.get_balance(address, commitment=self.commitment)
+        lamports = resp.value if hasattr(resp, 'value') else 0
+        usdc_balance = self.get_token_balance(address, self.USDC_MINT)
         
-        try:
-            resp = self.client.get_balance(address, commitment=self.commitment)
-            lamports = resp.value if hasattr(resp, 'value') else 0
-            usdc_balance = self.get_token_balance(address, self.USDC_MINT)
-            
-            return WalletInfo(
-                address=address,
-                lamports=lamports,
-                usdc_balance=usdc_balance,
-            )
-        except Exception:
-            return WalletInfo(address=address, lamports=1000000000, usdc_balance=100.0)
+        return WalletInfo(
+            address=address,
+            lamports=lamports,
+            usdc_balance=usdc_balance,
+        )
     
     def get_token_balance(self, address: str, mint: str) -> float:
         """Get token balance for a specific mint"""
-        if not HAS_SOLANA or not self.client:
-            return 100.0
+        resp = self.client.get_token_accounts_by_owner(
+            address,
+            {"mint": mint},
+            encoding="jsonParsed",
+            commitment=self.commitment,
+        )
         
-        try:
-            resp = self.client.get_token_accounts_by_owner(
-                address,
-                {"mint": mint},
-                encoding="jsonParsed",
-                commitment=self.commitment,
-            )
-            
-            if resp.value and len(resp.value) > 0:
-                account_data = resp.value[0].account.data
-                if isinstance(account_data, dict):
-                    return float(account_data.get('parsed', {}).get('info', {}).get('tokenAmount', {}).get('uiAmount', 0))
-            
-            return 0.0
-        except Exception:
-            return 0.0
+        if resp.value and len(resp.value) > 0:
+            account_data = resp.value[0].account.data
+            if isinstance(account_data, dict):
+                return float(account_data.get('parsed', {}).get('info', {}).get('tokenAmount', {}).get('uiAmount', 0))
+        
+        return 0.0
     
     def get_transaction(self, signature: str) -> Optional[TransactionInfo]:
         """Get transaction details"""
-        if not HAS_SOLANA or not self.client:
-            return TransactionInfo(signature=signature, slot=100, status="confirmed")
+        resp = self.client.get_transaction(
+            signature,
+            encoding="jsonParsed",
+            commitment=self.commitment,
+        )
         
-        try:
-            resp = self.client.get_transaction(
-                signature,
-                encoding="jsonParsed",
-                commitment=self.commitment,
+        if resp.value:
+            return TransactionInfo(
+                signature=signature,
+                slot=resp.value.slot,
+                status="confirmed",
+                block_time=resp.value.block_time,
             )
-            
-            if resp.value:
-                return TransactionInfo(
-                    signature=signature,
-                    slot=resp.value.slot,
-                    status="confirmed",
-                    block_time=resp.value.block_time,
-                )
-            return None
-        except Exception:
-            return None
+        return None
     
     def derive_escrow_pda(self, provider: str, skill_id: str) -> str:
         """Derive a PDA for an escrow account"""
-        if not HAS_SOLANA:
-            return f"escrow-{provider[:8]}-{skill_id}"
+        provider_bytes = bytes.fromhex(provider[::2])[:32]
+        seed_bytes = skill_id.encode()[:32]
         
-        try:
-            provider_bytes = bytes.fromhex(provider[::2])[:32]
-            seed_bytes = skill_id.encode()[:32]
-            
-            program_id = PublicKey.find_program_address(
-                [self.ESCROW_SEED.encode(), provider_bytes, seed_bytes],
-                PublicKey(self.USDC_MINT),
-            )
-            return str(program_id[0])
-        except Exception:
-            return f"escrow-{provider[:8]}-{skill_id}"
+        program_id = PublicKey.find_program_address(
+            [self.ESCROW_SEED.encode(), provider_bytes, seed_bytes],
+            PublicKey(self.USDC_MINT),
+        )
+        return str(program_id[0])
     
-    def simulate_transfer(
-        self,
-        from_address: str,
-        to_address: str,
-        lamports: int,
-    ) -> Dict[str, Any]:
-        """Simulate a SOL transfer"""
-        if not HAS_SOLANA or not self.client:
-            return {
-                "success": True,
-                "signature": f"simulated-tx-{from_address[:8]}-{to_address[:8]}",
-                "lamports": lamports,
-            }
-        
-        try:
-            resp = self.client.get_recent_blockhash()
-            return {"success": True, "units_consumed": resp.value.default_unit_consumption}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+    def get_recent_blockhash(self) -> str:
+        """Get recent blockhash for transaction building"""
+        resp = self.client.get_recent_blockhash()
+        return resp.value.blockhash if hasattr(resp.value, 'blockhash') else resp.value
     
-    def request_airdrop(self, address: str, lamports: int = 1000000000) -> Optional[str]:
+    def request_airdrop(self, address: str, lamports: int = 1000000000) -> str:
         """Request SOL airdrop (devnet/testnet only)"""
-        if not HAS_SOLANA or not self.client:
-            return f"airdrop-{address[:8]}"
-        
         if self.network != Network.DEVNET:
-            return None
+            raise ValueError("Airdrop only available on devnet")
         
-        try:
-            resp = self.client.request_airdrop(address, lamports, commitment=self.commitment)
-            return resp.value if hasattr(resp, 'value') else None
-        except Exception:
-            return None
+        resp = self.client.request_airdrop(address, lamports, commitment=self.commitment)
+        return resp.value if hasattr(resp, 'value') else str(resp)
 
 
 def get_client(network: str = "devnet") -> SolanaRPCClient:

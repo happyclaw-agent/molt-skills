@@ -91,14 +91,11 @@ class ReputationSkill:
     - Verify reputation claims
     """
     
-    def __init__(self, mock: bool = True):
-        self.mock = mock
+    def __init__(self):
         self._reputations: Dict[str, ReputationMetrics] = {}
         self._breakdowns: Dict[str, ReputationBreakdown] = {}
         self._history: Dict[str, List[ReputationHistory]] = {}
-        
-        if mock:
-            self._init_mock_data()
+        self._init_mock_data()
     
     def _init_mock_data(self):
         """Initialize with sample reputation data"""
@@ -158,10 +155,6 @@ class ReputationSkill:
         Returns:
             ReputationMetrics or None
         """
-        if self.mock:
-            return self._reputations.get(agent_address)
-        
-        # Would query from reputation_chain module
         return self._reputations.get(agent_address)
     
     def get_reputation_breakdown(self, agent_address: str) -> Optional[ReputationBreakdown]:
@@ -483,14 +476,11 @@ class ReputationSkill:
         return json.dumps(data, indent=2)
 
 
-def get_reputation_skill(mock: bool = True) -> ReputationSkill:
+def get_reputation_skill() -> ReputationSkill:
     """
     Get a ReputationSkill instance.
     
-    Args:
-        mock: Use mock data
-        
     Returns:
         Configured ReputationSkill
     """
-    return ReputationSkill(mock=mock)
+    return ReputationSkill()
