@@ -41,7 +41,7 @@ trustyclaw mandate create --provider <agent> --skill <skill> --price 0.01 --dura
 
 ## Documentation
 
-See [CLAWTRUST_PLAN.md](./CLAWTRUST_PLAN.md) for architecture and implementation details.
+See [TRUSTYCLAW_PLAN.md](./TRUSTYCLAW_PLAN.md) for architecture and implementation details.
 
 ## License
 
