@@ -328,23 +328,36 @@ def load_identity(wallet: str) -> Optional[AgentIdentity]:
 # ============ CLI ============
 
 def demo():
-    """Demo identity management"""
+    """Demo identity management with real devnet wallets"""
     manager = IdentityManager()
     
-    # Create an identity
-    identity = create_identity(
-        name="happyclaw-agent",
-        wallet_address="happyclaw.sol",
-        public_key="happyclaw-pubkey",
-        email="happytreeiot@gmail.com",
-    )
-    identity.reputation_score = 85.0
+    # Real devnet wallet addresses
+    WALLETS = {
+        "agent": "GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q",
+        "renter": "3WaHbF7k9ced4d2wA8caUHq2v57ujD4J2c57L8wZXfhN",
+        "provider": "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
+    }
     
-    manager.register(identity)
+    # Create identities for each wallet
+    for role, address in WALLETS.items():
+        identity = create_identity(
+            name=f"ClawTrust-{role.title()}",
+            wallet_address=address,
+            public_key=f"{role}-pubkey",
+            email="happytreeiot@gmail.com",
+        )
+        if role == "agent":
+            identity.reputation_score = 85.0
+        elif role == "provider":
+            identity.reputation_score = 88.0
+        else:
+            identity.reputation_score = 75.0
+        manager.register(identity)
     
-    # Query it
-    retrieved = manager.get_by_wallet("happyclaw.sol")
+    # Query the agent
+    retrieved = manager.get_by_wallet(WALLETS["agent"])
     print(f"Name: {retrieved.name}")
+    print(f"Wallet: {retrieved.wallet_address}")
     print(f"Reputation: {retrieved.reputation_score}")
 
 

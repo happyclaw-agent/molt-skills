@@ -431,10 +431,19 @@ def create_escrow_terms(
 # ============ CLI Demo ============
 
 async def demo():
-    """Demo the escrow client"""
+    """Demo the escrow client with real devnet wallets"""
     client = EscrowClient()
     
-    print("=== Escrow Demo ===\n")
+    # Real devnet wallet addresses
+    AGENT = "GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q"
+    RENTER = "3WaHbF7k9ced4d2wA8caUHq2v57ujD4J2c57L8wZXfhN"
+    PROVIDER = "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B"
+    
+    print("=== ClawTrust Escrow Demo ===")
+    print(f"Agent (Happy Claw): {AGENT[:16]}...")
+    print(f"Renter: {RENTER[:16]}...")
+    print(f"Provider: {PROVIDER[:16]}...")
+    print()
     
     # Create terms
     terms = create_escrow_terms(
@@ -447,7 +456,7 @@ async def demo():
     # Initialize escrow
     print("\n1. Initializing escrow...")
     tx = await client.initialize(
-        provider="happyclaw-agent",
+        provider=AGENT,
         mint=client.USDC_MINT,
         terms=terms,
     )
@@ -458,7 +467,7 @@ async def demo():
     print("\n2. Accepting and funding...")
     tx = await client.accept(
         escrow_address=tx.escrow_address,
-        renter="agent-alpha",
+        renter=RENTER,
         amount=10000,
     )
     print(f"   TX: {tx.tx_signature}")
@@ -471,7 +480,7 @@ async def demo():
     print("\n4. Completing task...")
     tx = await client.complete(
         escrow_address=tx.escrow_address,
-        authority="agent-alpha",
+        authority=RENTER,
     )
     print(f"   TX: {tx.tx_signature}")
     print(f"   State: {await client.get_state(tx.escrow_address)}")

@@ -27,14 +27,32 @@ class Skill:
         return self.price_usdc / 1_000_000
 
 
+# ============ Devnet Wallets ============
+# Configured for Solana Devnet testing
+
+WALLETS = {
+    "agent": {
+        "address": "GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q",
+        "name": "Happy Claw (Agent)",
+    },
+    "renter": {
+        "address": "3WaHbF7k9ced4d2wA8caUHq2v57ujD4J2c57L8wZXfhN",
+        "name": "Renter Agent",
+    },
+    "provider": {
+        "address": "HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
+        "name": "Provider Agent",
+    },
+}
+
 # ============ Demo Skills ============
 
 DEMO_SKILLS = {
     "image-generation": Skill(
         id="image-generation",
         name="Image Generation",
-        provider="happyclaw-agent",
-        wallet="happyclaw-agent.sol",
+        provider="GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q",
+        wallet="GFeyFZLmvsw7aKHNoUUM84tCvgKf34ojbpKeKcuXDE5q",
         price_usdc=10000,
         description="Generate images from text prompts using SDXL",
         capabilities=["text-to-image", "style-transfer", "inpainting"],
@@ -43,8 +61,8 @@ DEMO_SKILLS = {
     "code-review": Skill(
         id="code-review",
         name="Code Review",
-        provider="agent-alpha",
-        wallet="agent-alpha.sol",
+        provider="HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
+        wallet="HajVDaadfi6vxrt7y6SRZWBHVYCTscCc8Cwurbqbmg5B",
         price_usdc=50000,
         description="Automated code review with security checks",
         capabilities=["security-scan", "bug-detection", "style-check"],
