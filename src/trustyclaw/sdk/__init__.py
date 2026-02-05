@@ -10,6 +10,7 @@ Modules:
 - usdc: USDC SPL Token integration
 - reputation_chain: On-chain reputation storage
 - review_system: Full review lifecycle management
+- escrow_contract: Secure payment escrow
 """
 
 from .client import SolanaClient
@@ -31,6 +32,13 @@ from .review_system import (
     ReviewDispute,
     ReviewVote,
     get_review_service,
+)
+from .escrow_contract import (
+    EscrowClient as EscrowContractClient,
+    Escrow,
+    EscrowTerms,
+    EscrowState,
+    get_escrow_client,
 )
 
 __all__ = [
@@ -61,6 +69,11 @@ __all__ = [
     "ReviewDispute",
     "ReviewVote",
     "get_review_service",
+    "EscrowContractClient",
+    "Escrow",
+    "EscrowTerms",
+    "EscrowState",
+    "get_escrow_client",
 ]
 
 __version__ = "0.1.0"
