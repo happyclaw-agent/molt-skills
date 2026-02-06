@@ -585,3 +585,194 @@ def get_escrow_client(
         usdc_mint=usdc_mint,
         mock=mock,
     )
+
+# ============ USDC Payment Service Integration ============
+
+    def get_payment_service(self) -> 'USDCPaymentService':
+        """
+        Get the USDC Payment Service for this escrow.
+        """
+        if not hasattr(self, '_payment_service'):
+            from .usdc_payment import USDCPaymentService
+            self._payment_service = USDCPaymentService(
+                network=self.network,
+                usdc_client=None,
+            )
+        return self._payment_service
+    
+    def create_payment_intent(
+        self,
+        provider: str,
+        renter: str,
+        amount: int,
+        description: str,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> 'PaymentIntent':
+        """
+        Create a payment intent for escrow.
+        """
+        payment_service = self.get_payment_service()
+        
+        return payment_service.create_payment_intent(
+            amount=amount,
+            from_wallet=renter,
+            to_wallet=provider,
+            description=description,
+            metadata={
+                **(metadata or {}),
+                "escrow_program_id": self.program_id,
+                "network": self.network,
+            }
+        )
+    
+    def track_escrow_payment(
+        self,
+        escrow_address: str,
+        payment_intent_id: str,
+    ) -> 'EscrowPayment':
+        """
+        Track an escrow payment.
+        """
+        payment_service = self.get_payment_service()
+        
+        escrow_payment = payment_service._escrow_payments.get(escrow_address)
+        if escrow_payment:
+            return escrow_payment
+        
+        intent = payment_service.get_payment_intent(payment_intent_id)
+        if not intent:
+            raise EscrowError(f"Payment intent {payment_intent_id} not found")
+        
+        escrow_payment = payment_service.execute_escrow_payment(
+            escrow_id=escrow_address,
+            amount=intent.amount,
+            from_wallet=intent.from_wallet,
+            to_wallet=intent.to_wallet,
+            description=intent.description,
+        )
+        
+        return escrow_payment
+    
+    def execute_payment_with_confirmation(
+        self,
+        payment_intent_id: str,
+        max_retries: int = 3,
+    ) -> 'PaymentResult':
+        """
+        Execute payment with confirmation tracking.
+        """
+        payment_service = self.get_payment_service()
+        
+        result = payment_service.execute_payment_intent(payment_intent_id)
+        
+        if not result.success and max_retries > 0:
+            import time
+            time.sleep(1)
+            return self.execute_payment_with_confirmation(
+                payment_intent_id,
+                max_retries=max_retries - 1,
+            )
+        
+        return result
+    
+    def get_escrow_payment_status(self, escrow_address: str) -> Dict[str, Any]:
+        """
+        Get full payment status for an escrow.
+        """
+        escrow = self.get_escrow(escrow_address)
+        if not escrow:
+            return {"error": "Escrow not found"}
+        
+        payment_service = self.get_payment_service()
+        escrow_payment = payment_service.get_escrow_payment(escrow_address)
+        
+        result = {
+            "escrow_address": escrow_address,
+            "escrow_state": escrow.state.value if hasattr(escrow.state, 'value') else str(escrow.state),
+            "amount": escrow.terms.price_usdc if hasattr(escrow.terms, 'price_usdc') else escrow.terms.amount,
+        }
+        
+        if escrow_payment:
+            result["payment"] = {
+                "status": escrow_payment.status.value,
+                "payment_intent_id": escrow_payment.payment_intent_id,
+                "funded_at": escrow_payment.funded_at,
+                "released_at": escrow_payment.released_at,
+                "refunded_at": escrow_payment.refunded_at,
+            }
+        
+        return result
+    
+    def setup_balance_notification(
+        self,
+        wallet_address: str,
+        threshold_usd: float = 10.0,
+        callback_url: Optional[str] = None,
+        auto_reload: bool = False,
+        auto_reload_amount: Optional[int] = None,
+    ) -> 'BalanceNotification':
+        """
+        Setup balance notification for a wallet.
+        """
+        payment_service = self.get_payment_service()
+        
+        return payment_service.register_balance_notification(
+            wallet_address=wallet_address,
+            threshold_usd=threshold_usd,
+            callback_url=callback_url,
+            auto_reload=auto_reload,
+            auto_reload_amount=auto_reload_amount,
+        )
+    
+    def check_and_reload_balance(self, wallet_address: str) -> Dict[str, Any]:
+        """
+        Check balance and trigger auto-reload if needed.
+        """
+        payment_service = self.get_payment_service()
+        
+        return payment_service.check_balance_and_notify(wallet_address)
+    
+    def get_payment_history(
+        self,
+        wallet_address: str,
+        limit: int = 100,
+    ) -> List['Payment']:
+        """
+        Get payment history for a wallet.
+        """
+        payment_service = self.get_payment_service()
+        
+        return payment_service.get_payment_history(
+            wallet_address=wallet_address,
+            limit=limit,
+        )
+
+
+# ============ Helper Functions ============
+
+def get_escrow_with_payment_service(
+    program_id: Optional[str] = None,
+    network: str = "devnet",
+    multisig_threshold_usd: float = 1000.0,
+    recovery_wallet: Optional[str] = None,
+) -> EscrowClient:
+    """
+    Get an EscrowClient with payment service configured.
+    """
+    client = EscrowClient(
+        program_id=program_id,
+        network=network,
+    )
+    
+    from .usdc_payment import USDCPaymentService, MultisigConfig
+    payment_service = client.get_payment_service()
+    
+    multisig_config = MultisigConfig(
+        threshold_usd=multisig_threshold_usd,
+        required_signers=[],
+        required_count=2,
+        recovery_signer=recovery_wallet,
+    )
+    payment_service.set_multisig_config(multisig_config)
+    
+    return client
