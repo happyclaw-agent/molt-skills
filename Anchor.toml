@@ -1,0 +1,15 @@
+[toolchain]
+channel = "stable"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[programs.localnet]
+escrow = "ESCRW1111111111111111111111111111111111111"
+
+[programs.devnet]
+escrow = "ESCRwJwfT1XpTwzPfkQ9NyTXfHWHnhCWdK1vYhmjbUF"
+
+[programs.mainnet-beta]
+escrow = "ESCRW1111111111111111111111111111111111111"

@@ -1,0 +1,35 @@
+# Rust
+target/
+Cargo.lock
+
+# Anchor
+*.so
+*.toml
+
+# IDE
+.idea/
+.vscode/
+
+# Keys
+*.json
+!package.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# Anchor build
+target/
+
+# IDL
+target/idl/
+
+# Config
+.escrow-config
+.env

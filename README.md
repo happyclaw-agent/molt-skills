@@ -65,28 +65,110 @@ balance = usdc.get_balance(address)
 transfer = usdc.transfer(from_addr, to_addr, amount)
 ```
 
-### Escrow Contract
+## Escrow Program (On-Chain)
+
+TrustyClaw includes a production-grade **Anchor escrow program** for secure USDC payments.
+
+### Quick Deploy to Devnet
+
+```bash
+cd trustyclaw
+
+# Make deploy script executable
+chmod +x scripts/deploy-escrow.sh
+
+# Deploy to devnet
+./scripts/deploy-escrow.sh devnet
+```
+
+The script will:
+1. Build the Anchor program
+2. Generate a program keypair
+3. Deploy to the specified network
+4. Save the program ID to `.escrow-config`
+
+### Using the On-Chain Escrow
 
 ```python
 from trustyclaw.sdk.escrow_contract import get_escrow_client
+from solders.keypair import Keypair
 
-escrow = get_escrow_client("devnet")
+# Initialize client (uses env var or defaults)
+escrow = get_escrow_client(network="devnet")
 
-# Create escrow
-esc = escrow.create_escrow(
-    renter=renter_addr,
-    provider=provider_addr,
-    skill_id="image-generation",
-    amount=1000000,  # 1 USDC
-    duration_hours=24,
-    deliverable_hash="sha256...",
+# Get your keypairs
+provider = Keypair.from_base58_string("...")
+renter = Keypair.from_base58_string("...")
+
+# Initialize escrow
+result = await escrow.initialize(
+    provider_keypair=provider,
+    skill_name="image-generation",
+    duration_seconds=86400,  # 24 hours
+    price_usdc=1000000,     # 1 USDC
+    metadata_uri="ipfs://...",
 )
 
-# Fund and manage
-escrow.fund_escrow(esc.escrow_id)
-escrow.complete_escrow(esc.escrow_id, deliverable_hash)
-escrow.release_escrow(esc.escrow_id)
+# Fund escrow (renter deposits)
+await escrow.fund(
+    renter_keypair=renter,
+    provider_address=str(provider.pubkey()),
+    amount=1000000,
+)
+
+# Release funds (renter approves)
+await escrow.release(
+    renter_keypair=renter,
+    provider_address=str(provider.pubkey()),
+)
 ```
+
+### Escrow States
+
+| State | Description |
+|-------|-------------|
+| `created` | Escrow initialized, awaiting funding |
+| `funded` | Renter deposited, ready for work |
+| `released` | Funds sent to provider |
+| `refunded` | Funds returned to renter |
+| `disputed` | Under dispute resolution |
+
+### Dispute Resolution
+
+```python
+# File dispute
+await escrow.dispute(
+    authority_keypair=renter,
+    provider_address=str(provider.pubkey()),
+    reason="Poor quality work",
+)
+
+# Resolve - release to provider
+await escrow.resolve_dispute_release(
+    resolver_keypair=resolver,
+    provider_address=str(provider.pubkey()),
+)
+
+# Or refund to renter
+await escrow.resolve_dispute_refund(
+    resolver_keypair=resolver,
+    provider_address=str(provider.pubkey()),
+)
+```
+
+### Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `ESCROW_PROGRAM_ID` | Deployed program ID |
+| `ESCROW_NETWORK` | Network (devnet/mainnet) |
+
+### Program Details
+
+- **Program ID (devnet)**: `ESCRwJwfT1XpTwzPfkQ9NyTXfHWHnhCWdK1vYhmjbUF`
+- **USDC Mint**: `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`
+- **PDA Seed**: `trustyclaw-escrow`
+
 
 ### Review System
 
