@@ -52,7 +52,7 @@ def demo_solana():
     
     print_section("Wallet Balances")
     print(f"Provider: {PROVIDER_WALLET[:16]}...")
-    balance = client.get_balance(PROVIDER_WALLET)
+    balance = client.get_balance(str(PROVIDER_WALLET))
     print(f"Balance: {balance.lamports:,} lamports ({balance.sol_balance:.4f} SOL)")
     
     print(f"\nRenter: {RENTER_WALLET[:16]}...")
@@ -79,7 +79,7 @@ def demo_usdc():
         print("Set SOLANA_KEYPAIR_PATH for real transactions")
     
     print_section("Provider USDC Balance")
-    balance = usdc.get_balance(PROVIDER_WALLET)
+    balance = usdc.get_balance(str(PROVIDER_WALLET))
     print(f"Balance: {balance:,.2f} USDC")
     
     print_section("Renter USDC Balance")

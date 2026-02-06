@@ -91,7 +91,8 @@ class SolanaRPCClient:
     
     def get_balance(self, address: str) -> WalletInfo:
         """Get SOL and USDC balance for an address"""
-        resp = self.client.get_balance(address, commitment=self.commitment)
+        pubkey = Pubkey.from_string(address) if isinstance(address, str) else address
+        resp = self.client.get_balance(pubkey, commitment=self.commitment)
         lamports = resp.value if hasattr(resp, 'value') else 0
         usdc_balance = self.get_token_balance(address, self.USDC_MINT)
         

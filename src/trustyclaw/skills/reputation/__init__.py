@@ -12,7 +12,11 @@ from enum import Enum
 import json
 import time
 
-from .reputation_chain import (
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+from trustyclaw.sdk.reputation_chain import (
     get_reputation_chain,
     ReputationChainSDK,
     ReputationScoreData,

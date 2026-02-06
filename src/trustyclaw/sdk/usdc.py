@@ -12,6 +12,19 @@ import base64
 import time
 import hashlib
 
+try:
+    from solana.rpc.api import Client as SolanaClient
+    from solana.rpc.commitment import Confirmed, Finalized
+    from solders.keypair import Keypair
+    from solders.pubkey import Pubkey
+    HAS_SOLANA = True
+    HAS_SPL_TOKEN = True
+except ImportError:
+    HAS_SOLANA = False
+    HAS_SPL_TOKEN = False
+    Keypair = None
+    Pubkey = None
+
 class TokenError(Exception):
     """Token operation error"""
     pass
