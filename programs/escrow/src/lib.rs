@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 use std::str::FromStr;
 
-declare_id!("ESCRW1111111111111111111111111111111111111");
+declare_id!("ESCRwJwfT1XpTwzPfkQ9NyTXfHWHnhCWdK1vYhmjbUF");
 
 // Constants
 const ESCROW_SEED: &[u8] = b"trustyclaw-escrow";
@@ -40,9 +40,10 @@ pub mod escrow {
         escrow.amount = 0;
         escrow.state = EscrowState::Created;
         escrow.created_at = Clock::get()?.unix_timestamp;
-        escrow.funded_at = None;
-        escrow.completed_at = None;
-        escrow.disputed_at = None;
+        escrow.funded_at = 0;
+        escrow.completed_at = 0;
+        escrow.disputed_at = 0;
+        escrow.dispute_reason = String::new();
         
         msg!("Escrow initialized: {}", escrow.key());
         Ok(())
@@ -56,7 +57,7 @@ pub mod escrow {
         escrow.renter = ctx.accounts.renter.key();
         escrow.amount = amount;
         escrow.state = EscrowState::Funded;
-        escrow.funded_at = Some(Clock::get()?.unix_timestamp);
+        escrow.funded_at = Clock::get()?.unix_timestamp;
 
         // Transfer USDC from renter to escrow PDA
         let cpi_accounts = Transfer {
@@ -147,7 +148,8 @@ pub mod escrow {
         
         escrow.state = EscrowState::Disputed;
         escrow.dispute_reason = Some(reason);
-        escrow.disputed_at = Some(Clock::get()?.unix_timestamp);
+        escrow.disputed_at = Clock::get()?.unix_timestamp;
+        escrow.dispute_reason = reason;
 
         msg!("Escrow disputed: {}", reason);
         Ok(())
