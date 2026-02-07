@@ -654,9 +654,9 @@ class EscrowClient:
 
 # Helper function to get client
     def create_escrow(self, renter: str, provider: str, skill_id: str, amount: int, duration_hours: int, deliverable_hash: str) -> EscrowResult:
-        \"\"\"Create escrow (graceful simulation if no real tx possible)\"\"\"
-        print(\"[SIMULATION] Creating escrow - set SOLANA_KEYPAIR_PATH for real on-chain\")
-        escrow_id = f\"escrow_{provider[:8]}_{skill_id}_{hash(deliverable_hash) % 10000}\"
+        '''Create escrow (graceful simulation if no real tx possible)'''
+        print("[SIMULATION] Creating escrow - set SOLANA_KEYPAIR_PATH for real on-chain")
+        escrow_id = f"escrow_{provider[:8]}_{skill_id}_{hash(deliverable_hash) % 10000}"
         self._escrows[escrow_id] = {
             'state': 'created',
             'amount': amount,
@@ -668,8 +668,8 @@ class EscrowClient:
         )
 
     def fund_escrow(self, escrow_id: str) -> EscrowResult:
-        \"\"\"Fund escrow (graceful simulation)\"\"\"
-        print(\"[SIMULATION] Funding escrow\")
+        """Fund escrow (graceful simulation)"""
+        print("[SIMULATION] Funding escrow")
         if escrow_id not in self._escrows:
             raise ValueError(f"Escrow {escrow_id} not found")
         self._escrows[escrow_id]['state'] = 'funded'
@@ -680,10 +680,10 @@ class EscrowClient:
         )
 
     def activate_escrow(self, escrow_id: str) -> EscrowResult:
-        \"\"\"Activate escrow after funding (simulation)\"\"\"
-        print(\"[SIMULATION] Activating escrow\")
+        """Activate escrow after funding (simulation)"""
+        print("[SIMULATION] Activating escrow")
         if escrow_id not in self._escrows or self._escrows[escrow_id]['state'] != 'funded':
-            raise ValueError(\"Cannot activate unfunded escrow\")
+            raise ValueError("Cannot activate unfunded escrow")
         self._escrows[escrow_id]['state'] = 'active'
         return EscrowResult(
             escrow_id=escrow_id,
@@ -692,10 +692,10 @@ class EscrowClient:
         )
 
     def complete_escrow(self, escrow_id: str, deliverable_hash: str) -> EscrowResult:
-        \"\"\"Complete escrow with deliverable (simulation)\"\"\"
-        print(\"[SIMULATION] Completing escrow\")
+        """Complete escrow with deliverable (simulation)"""
+        print("[SIMULATION] Completing escrow")
         if escrow_id not in self._escrows or self._escrows[escrow_id]['state'] != 'active':
-            raise ValueError(\"Cannot complete inactive escrow\")
+            raise ValueError("Cannot complete inactive escrow")
         self._escrows[escrow_id]['state'] = 'completed'
         self._escrows[escrow_id]['deliverable_hash'] = deliverable_hash
         return EscrowResult(
@@ -705,10 +705,10 @@ class EscrowClient:
         )
 
     def release_escrow(self, escrow_id: str) -> EscrowResult:
-        \"\"\"Release funds (simulation)\"\"\"
-        print(\"[SIMULATION] Releasing escrow funds\")
+        """Release funds (simulation)"""
+        print("[SIMULATION] Releasing escrow funds")
         if escrow_id not in self._escrows or self._escrows[escrow_id]['state'] != 'completed':
-            raise ValueError(\"Cannot release uncompleted escrow\")
+            raise ValueError("Cannot release uncompleted escrow")
         self._escrows[escrow_id]['state'] = 'released'
         return EscrowResult(
             escrow_id=escrow_id,
@@ -717,18 +717,18 @@ class EscrowClient:
         )
 
     def release_amount_for_escrow(self, escrow_id: str) -> int:
-        \"\"\"Get release amount for escrow\"\"\"
+        """Get release amount for escrow"""
         if escrow_id not in self._escrows:
             return 0
         return self._escrows[escrow_id]['amount']
 
-    def create_escrow(self, renter: str, provider: str, skill_id: str, amount: int, duration_hours: int, deliverable_hash: str) -> &#x27;EscrowResult&#x27;:
-        &#x27;&#x27;&#x27;Create escrow (graceful simulation if no real tx possible)&#x27;&#x27;&#x27;
-        print(&quot;[SIMULATION] Creating escrow - set SOLANA_KEYPAIR_PATH for real on-chain&quot;)
-        escrow_id = f&quot;escrow_{provider[:8]}_{skill_id}_{hash(deliverable_hash) % 10000}&quot;
+    def create_escrow(self, renter: str, provider: str, skill_id: str, amount: int, duration_hours: int, deliverable_hash: str) -> 'EscrowResult':
+        '''Create escrow (graceful simulation if no real tx possible)'''
+        print('[SIMULATION] Creating escrow - set SOLANA_KEYPAIR_PATH for real on-chain')
+        escrow_id = f'escrow_{provider[:8]}_{skill_id}_{hash(deliverable_hash) % 10000}'
         self._escrows[escrow_id] = {
-            &#x27;state&#x27;: &#x27;created&#x27;,
-            &#x27;amount&#x27;: amount,
+            'state': 'created',
+            'amount': amount,
         }
         return EscrowResult(
             escrow_id=escrow_id,
@@ -736,60 +736,60 @@ class EscrowClient:
             terms=SimpleTerms(amount=amount)
         )
 
-    def fund_escrow(self, escrow_id: str) -> &#x27;EscrowResult&#x27;:
-        &#x27;&#x27;&#x27;Fund escrow (graceful simulation)&#x27;&#x27;&#x27;
-        print(&quot;[SIMULATION] Funding escrow&quot;)
+    def fund_escrow(self, escrow_id: str) -> 'EscrowResult':
+        '''Fund escrow (graceful simulation)'''
+        print('[SIMULATION] Funding escrow')
         if escrow_id not in self._escrows:
-            raise ValueError(f&quot;Escrow {escrow_id} not found&quot;)
-        self._escrows[escrow_id][&#x27;state&#x27;] = &#x27;funded&#x27;
+            raise ValueError(f'Escrow {escrow_id} not found')
+        self._escrows[escrow_id]['state'] = 'funded'
         return EscrowResult(
             escrow_id=escrow_id,
             state=EscrowState.FUNDED,
-            terms=SimpleTerms(amount=self._escrows[escrow_id][&#x27;amount&#x27;])
+            terms=SimpleTerms(amount=self._escrows[escrow_id]['amount'])
         )
 
-    def activate_escrow(self, escrow_id: str) -> &#x27;EscrowResult&#x27;:
-        &#x27;&#x27;&#x27;Activate escrow after funding (simulation)&#x27;&#x27;&#x27;
-        print(&quot;[SIMULATION] Activating escrow&quot;)
-        if escrow_id not in self._escrows or self._escrows[escrow_id][&#x27;state&#x27;] != &#x27;funded&#x27;:
-            raise ValueError(&quot;Cannot activate unfunded escrow&quot;)
-        self._escrows[escrow_id][&#x27;state&#x27;] = &#x27;active&#x27;
+    def activate_escrow(self, escrow_id: str) -> 'EscrowResult':
+        '''Activate escrow after funding (simulation)'''
+        print('[SIMULATION] Activating escrow')
+        if escrow_id not in self._escrows or self._escrows[escrow_id]['state'] != 'funded':
+            raise ValueError('Cannot activate unfunded escrow')
+        self._escrows[escrow_id]['state'] = 'active'
         return EscrowResult(
             escrow_id=escrow_id,
             state=EscrowState.ACTIVE,
-            terms=SimpleTerms(amount=self._escrows[escrow_id][&#x27;amount&#x27;])
+            terms=SimpleTerms(amount=self._escrows[escrow_id]['amount'])
         )
 
-    def complete_escrow(self, escrow_id: str, deliverable_hash: str) -> &#x27;EscrowResult&#x27;:
-        &#x27;&#x27;&#x27;Complete escrow with deliverable (simulation)&#x27;&#x27;&#x27;
-        print(&quot;[SIMULATION] Completing escrow&quot;)
-        if escrow_id not in self._escrows or self._escrows[escrow_id][&#x27;state&#x27;] != &#x27;active&#x27;:
-            raise ValueError(&quot;Cannot complete inactive escrow&quot;)
-        self._escrows[escrow_id][&#x27;state&#x27;] = &#x27;completed&#x27;
-        self._escrows[escrow_id][&#x27;deliverable_hash&#x27;] = deliverable_hash
+    def complete_escrow(self, escrow_id: str, deliverable_hash: str) -> 'EscrowResult':
+        '''Complete escrow with deliverable (simulation)'''
+        print('[SIMULATION] Completing escrow')
+        if escrow_id not in self._escrows or self._escrows[escrow_id]['state'] != 'active':
+            raise ValueError('Cannot complete inactive escrow')
+        self._escrows[escrow_id]['state'] = 'completed'
+        self._escrows[escrow_id]['deliverable_hash'] = deliverable_hash
         return EscrowResult(
             escrow_id=escrow_id,
             state=EscrowState.COMPLETED,
-            terms=SimpleTerms(amount=self._escrows[escrow_id][&#x27;amount&#x27;])
+            terms=SimpleTerms(amount=self._escrows[escrow_id]['amount'])
         )
 
-    def release_escrow(self, escrow_id: str) -> &#x27;EscrowResult&#x27;:
-        &#x27;&#x27;&#x27;Release funds (simulation)&#x27;&#x27;&#x27;
-        print(&quot;[SIMULATION] Releasing escrow funds&quot;)
-        if escrow_id not in self._escrows or self._escrows[escrow_id][&#x27;state&#x27;] != &#x27;completed&#x27;:
-            raise ValueError(&quot;Cannot release uncompleted escrow&quot;)
-        self._escrows[escrow_id][&#x27;state&#x27;] = &#x27;released&#x27;
+    def release_escrow(self, escrow_id: str) -> 'EscrowResult':
+        '''Release funds (simulation)'''
+        print('[SIMULATION] Releasing escrow funds')
+        if escrow_id not in self._escrows or self._escrows[escrow_id]['state'] != 'completed':
+            raise ValueError('Cannot release uncompleted escrow')
+        self._escrows[escrow_id]['state'] = 'released'
         return EscrowResult(
             escrow_id=escrow_id,
             state=EscrowState.RELEASED,
-            terms=SimpleTerms(amount=self._escrows[escrow_id][&#x27;amount&#x27;])
+            terms=SimpleTerms(amount=self._escrows[escrow_id]['amount'])
         )
 
     def release_amount_for_escrow(self, escrow_id: str) -> int:
-        &#x27;&#x27;&#x27;Get release amount for escrow&#x27;&#x27;&#x27;
+        '''Get release amount for escrow'''
         if escrow_id not in self._escrows:
             return 0
-        return self._escrows[escrow_id][&#x27;amount&#x27;]
+        return self._escrows[escrow_id]['amount']
 
 def get_escrow_client(
     program_id: Optional[str] = None,

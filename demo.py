@@ -325,7 +325,11 @@ def demo_reputation_chain():
     print(f"PDA: {pda}")
     
     print_section("Get On-Chain Reputation")
-    rep = program.get_reputation(PROVIDER_WALLET)
+    try:
+        rep = program.get_reputation(PROVIDER_WALLET)
+    except Exception as e:
+        print(f"Mock mode - no on-chain reputation available ({str(e)})")
+        rep = None
     if rep:
         print(f"On-Chain Score: {rep.reputation_score}")
         print(f"Reviews: {rep.total_reviews}")
