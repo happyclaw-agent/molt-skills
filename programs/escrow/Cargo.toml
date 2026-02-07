@@ -1,14 +1,15 @@
-[toolchain]
-channel = "stable"
-targets = ["bpf"]
+[package]
+name = "trustyclaw-escrow"
+version = "0.1.0"
+description = "TrustyClaw Escrow Program"
+edition = "2021"
 
 [dependencies]
-anchor-lang = "0.29.0"
-anchor-spl = "0.29.0"
+anchor-lang = "0.28.0"
+anchor-spl = "0.28.0"
+solana-program = "1.16.0"
 
 [features]
-default = []
 no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
-cpi = ["default/no-entrypoint"]

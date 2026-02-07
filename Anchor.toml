@@ -1,6 +1,3 @@
-[toolchain]
-channel = "stable"
-
 [provider]
 cluster = "devnet"
 wallet = "~/.config/solana/dev-wallet1.json"

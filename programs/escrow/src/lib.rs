@@ -2,18 +2,16 @@ use anchor_lang::prelude::*;
 
 declare_id!("ESCRwJwfT1XpTwzPfkQ9NyTXfHWHnhCWdK1vYhmjbUF");
 
-const ESCROW_SEED: &[u8] = b"escrow";
-
 #[program]
 pub mod escrow {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, data: EscrowData) -> Result<()> {
+    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         let escrow = &mut ctx.accounts.escrow;
-        escrow.provider = data.provider;
-        escrow.renter = data.renter;
-        escrow.amount = data.amount;
-        escrow.state = 0; // 0 = created
+        escrow.provider = ctx.accounts.provider.key();
+        escrow.renter = ctx.accounts.provider.key();
+        escrow.amount = 0;
+        escrow.state = 0;
         escrow.timestamp = Clock::get()?.unix_timestamp;
         Ok(())
     }
@@ -22,19 +20,19 @@ pub mod escrow {
         let escrow = &mut ctx.accounts.escrow;
         escrow.renter = ctx.accounts.renter.key();
         escrow.amount = amount;
-        escrow.state = 1; // 1 = funded
+        escrow.state = 1;
         Ok(())
     }
 
     pub fn release(ctx: Context<Release>) -> Result<()> {
         let escrow = &mut ctx.accounts.escrow;
-        escrow.state = 2; // 2 = released
+        escrow.state = 2;
         Ok(())
     }
 
     pub fn refund(ctx: Context<Refund>) -> Result<()> {
         let escrow = &mut ctx.accounts.escrow;
-        escrow.state = 3; // 3 = refunded
+        escrow.state = 3;
         Ok(())
     }
 }
@@ -46,9 +44,9 @@ pub struct Initialize<'info> {
     #[account(
         init,
         payer = provider,
-        seeds = [ESCROW_SEED, provider.key().as_ref()],
-        bump,
-        space = 200
+        space = 100,
+        seeds = [b"escrow", provider.key().as_ref()],
+        bump
     )]
     pub escrow: Account<'info, Escrow>,
     pub system_program: Program<'info, System>,
@@ -60,10 +58,12 @@ pub struct Fund<'info> {
     pub renter: Signer<'info>,
     #[account(
         mut,
-        seeds = [ESCROW_SEED, escrow.provider.as_ref()],
+        seeds = [b"escrow", escrow.provider.as_ref()],
         bump,
+        has_one = provider,
     )]
     pub escrow: Account<'info, Escrow>,
+    pub provider: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -73,7 +73,7 @@ pub struct Release<'info> {
     pub renter: Signer<'info>,
     #[account(
         mut,
-        seeds = [ESCROW_SEED, escrow.provider.as_ref()],
+        seeds = [b"escrow", escrow.provider.as_ref()],
         bump,
         has_one = renter,
     )]
@@ -87,7 +87,7 @@ pub struct Refund<'info> {
     pub provider: Signer<'info>,
     #[account(
         mut,
-        seeds = [ESCROW_SEED, escrow.provider.as_ref()],
+        seeds = [b"escrow", escrow.provider.as_ref()],
         bump,
     )]
     pub escrow: Account<'info, Escrow>,
@@ -101,11 +101,4 @@ pub struct Escrow {
     pub amount: u64,
     pub state: u8,
     pub timestamp: i64,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize)]
-pub struct EscrowData {
-    pub provider: Pubkey,
-    pub renter: Pubkey,
-    pub amount: u64,
 }
