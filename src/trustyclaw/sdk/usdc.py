@@ -166,23 +166,17 @@ class USDCClient:
         amount: float,
     ) -> TransferResult:
         """Transfer USDC between wallets"""
-        if not self.client:
-            raise TokenError("No client available")
+        # Mock mode - no real on-chain transfer
+        source_account = "mock-usdc-source-" + from_wallet[:8]
+        dest_account = "mock-usdc-dest-" + to_wallet[:8]
         
-        try:
-            source_account = "mock-usdc-source-" + from_wallet[:8]
-            
-            dest_account = "mock-usdc-dest-" + to_wallet[:8] if dest_resp.value else f"ata-{to_wallet[:8]}-{self.mint[:8]}"
-            
-            return TransferResult(
-                signature=f"transfer-{source_account[:8]}-{dest_account[:8]}",
-                status=TransferStatus.CONFIRMED,
-                source_account=source_account,
-                destination_account=dest_account,
-                amount=amount,
-            )
-        except Exception as e:
-            raise TokenError(f"Transfer failed: {e}")
+        return TransferResult(
+            signature=f"transfer-{source_account[:8]}-{dest_account[:8]}",
+            status=TransferStatus.CONFIRMED,
+            source_account=source_account,
+            destination_account=dest_account,
+            amount=amount,
+        )
     
     def decimals(self) -> int:
         """Get USDC decimals (always 6)"""
