@@ -1,8 +1,9 @@
 [workspace]
 members = ["programs/escrow"]
+resolver = "2"
 
 [workspace.dependencies]
-anchor-lang = "0.29.0"
+anchor-lang = "0.30.1"
 
 [profile.release]
 overflow-checks = true
