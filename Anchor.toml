@@ -1,15 +1,15 @@
 [toolchain]
-channel = "1.80.0"
+channel = "1.95.0-nightly"
 
 [provider]
 cluster = "devnet"
 wallet = "~/.config/solana/dev-wallet1.json"
 
 [programs.localnet]
-escrow = "ESCRW1111111111111111111111111111111111111"
+escrow = "F2Fx88Qovf28dqhPLomxTuFNa1fm2VBnkJdksqQrQs8N"
 
 [programs.devnet]
-escrow = "ESCRwJwfT1XpTwzPfkQ9NyTXfHWHnhCWdK1vYhmjbUF"
+escrow = "F2Fx88Qovf28dqhPLomxTuFNa1fm2VBnkJdksqQrQs8N"
 
 [programs.mainnet-beta]
-escrow = "ESCRW1111111111111111111111111111111111111"
+escrow = "F2Fx88Qovf28dqhPLomxTuFNa1fm2VBnkJdksqQrQs8N"
