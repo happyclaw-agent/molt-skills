@@ -3,11 +3,27 @@
 TrustyClaw Demo Application
 
 End-to-end demonstration of TrustyClaw features with real USDC operations.
+
+Usage:
+    python3 demo.py              # Run with mock mode (default)
+    python3 demo.py --onchain    # Run with real on-chain contracts
+    python3 demo.py --mock       # Run with mock mode explicitly
 """
 
 import sys
-import json
+import argparse
 from datetime import datetime, timezone
+
+# Parse arguments
+parser = argparse.ArgumentParser(description='TrustyClaw Demo')
+parser.add_argument('--mock', action='store_true', default=True, help='Use mock mode (default)')
+parser.add_argument('--onchain', action='store_true', help='Use real on-chain contracts')
+args = parser.parse_args()
+
+USE_MOCK = args.mock or not args.onchain
+
+if USE_MOCK:
+    print("⚠ Mock mode - Use --onchain for real on-chain operations")
 
 # Add src to path
 sys.path.insert(0, 'src')
