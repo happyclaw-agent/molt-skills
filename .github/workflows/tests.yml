@@ -14,24 +14,30 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Poetry
-        run: pip install poetry
-
-      - name: Install dependencies
-        run: poetry install --no-interaction
+      - name: Create venv and install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -r requirements.txt
 
       - name: Run smoke tests
-        working-directory: \${{ github.workspace }}
-        run: poetry run python scripts/smoke_tests.py
+        working-directory: ${{ github.workspace }}
+        env:
+          PYTHONPATH: src
+        run: .venv/bin/python scripts/smoke_tests.py
 
       - name: Run simple unit tests
-        working-directory: \${{ github.workspace }}
-        run: poetry run python src/tests/unit/test_simple.py
+        working-directory: ${{ github.workspace }}
+        env:
+          PYTHONPATH: src
+        run: .venv/bin/python src/tests/unit/test_simple.py
 
       - name: Verify imports
-        working-directory: \${{ github.workspace }}
+        working-directory: ${{ github.workspace }}
+        env:
+          PYTHONPATH: src
         run: |
-          poetry run python -c "
+          .venv/bin/python -c "
           from trustyclaw.sdk.client import SolanaClient
           from trustyclaw.sdk.identity import AgentIdentity
           from trustyclaw.sdk.reputation import ReputationEngine
