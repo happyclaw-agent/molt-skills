@@ -285,7 +285,22 @@ class ReputationSkill:
             return ReputationTier.NEW.value
         else:
             return ReputationTier.UNKNOWN.value
-    
+
+    def get_tier_for_score(self, score: float) -> str:
+        """
+        Get tier name for a numeric score (for testing / display).
+        Same logic as get_reputation_tier but without fetching from chain.
+        """
+        if score >= 90:
+            return ReputationTier.ELITE.value
+        if score >= 75:
+            return ReputationTier.TRUSTED.value
+        if score >= 50:
+            return ReputationTier.VERIFIED.value
+        if score >= 25:
+            return ReputationTier.NEW.value
+        return ReputationTier.UNKNOWN.value
+
     def get_top_reputed_agents(self, limit: int = 10) -> List[ReputationMetrics]:
         """
         Get agents with highest reputation.
@@ -536,18 +551,18 @@ class ReputationSkill:
             rep = self._get_cached_or_fetch(agent_address)
             data = [rep.to_dict()] if rep else []
         else:
-            data = [m.to_dict() for m in self._cache.values()]
-        
+            data = [m.to_dict() for (m, _) in self._cache.values()]
         return json.dumps(data, indent=2)
 
 
-def get_reputation_skill(network: str = "devnet") -> ReputationSkill:
+def get_reputation_skill(network: str = "devnet", mock: bool = False) -> ReputationSkill:
     """
     Get a ReputationSkill instance.
-    
+
     Args:
         network: Network name (devnet, mainnet)
-        
+        mock: If True, use in-memory behavior (no chain). Default False.
+
     Returns:
         Configured ReputationSkill
     """

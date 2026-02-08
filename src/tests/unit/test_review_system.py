@@ -4,6 +4,8 @@ Tests for Review System
 
 import pytest
 
+from trustyclaw.sdk.review_system import DisputeResolution, ReviewStatus
+
 
 class TestReview:
     """Tests for Review dataclass"""
@@ -156,15 +158,15 @@ class TestReviewService:
         )
         service.submit_review(review.review_id)
         dispute = service.file_dispute(review.review_id, "provider", "Reason")
-        
         resolved = service.resolve_dispute(
             dispute.dispute_id,
-            "approved",
+            DisputeResolution.APPROVED,
             "Review is valid",
         )
-        
-        assert resolved.status.value == "resolved"
-        assert resolved.resolution.value == "approved"
+        status_val = resolved.status.value if hasattr(resolved.status, "value") else resolved.status
+        resolution_val = resolved.resolution.value if hasattr(resolved.resolution, "value") else resolved.resolution
+        assert status_val == "resolved"
+        assert resolution_val == "approved"
     
     def test_vote_review(self, service):
         """Test voting on a review"""

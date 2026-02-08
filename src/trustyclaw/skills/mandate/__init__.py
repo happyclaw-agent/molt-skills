@@ -846,10 +846,13 @@ class MandateSkill:
         )
 
 
-def get_mandate_skill() -> MandateSkill:
+def get_mandate_skill(mock: bool = False) -> MandateSkill:
     """
     Get a MandateSkill instance.
-    
+
+    Args:
+        mock: If True, use in-memory behavior (no chain). Default False.
+
     Returns:
         Configured MandateSkill
     """

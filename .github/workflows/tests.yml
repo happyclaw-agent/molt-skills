@@ -44,3 +44,15 @@ jobs:
           from trustyclaw.sdk.escrow import EscrowClient
           print('All imports successful')
           "
+
+      - name: Run full unit test suite
+        working-directory: ${{ github.workspace }}
+        env:
+          PYTHONPATH: src
+        run: .venv/bin/python -m pytest src/tests/unit -v --tb=short
+
+      - name: Run demo (mock mode only)
+        working-directory: ${{ github.workspace }}
+        env:
+          PYTHONPATH: src
+        run: .venv/bin/python demo.py --mock

@@ -1,8 +1,9 @@
 """
-Tests for Anchor on-chain deployment and demo.py functionality.
+Tests for Anchor build and demo.py functionality.
 
-Run with:
-    python3 -m pytest src/tests/unit/test_anchor_deploy.py -v
+No test runs `anchor deploy` or any on-chain deployment (zero SOL cost).
+Tests only: config presence, optional anchor build/IDL, demo --mock/--help.
+Run with: python3 -m pytest src/tests/unit/test_anchor_deploy.py -v
 """
 
 import pytest
@@ -208,14 +209,14 @@ class TestFullDemo:
         )
         
         features = [
-            'Solana blockchain integration',
-            'USDC token handling',
-            'Escrow contract management',
-            'Review submission',
-            'Mandate lifecycle',
-            'Agent/skill discovery',
-            'Reputation queries',
-            'On-chain reputation storage',
+            'SOLANA INTEGRATION',
+            'USDC TOKEN INTEGRATION',
+            'ESCROW CONTRACT',
+            'REVIEW SYSTEM',
+            'MANDATE SKILL',
+            'DISCOVERY SKILL',
+            'REPUTATION SKILL',
+            'ON-CHAIN REPUTATION',
         ]
         
         for feature in features:

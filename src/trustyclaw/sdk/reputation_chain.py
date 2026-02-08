@@ -51,9 +51,9 @@ class ReputationScoreData:
     updated_at: int = 0
     
     def to_bytes(self) -> bytes:
-        """Serialize to bytes"""
+        """Serialize to bytes (9 fields: 64s + 8 I)"""
         return struct.pack(
-            '<64sIIIfffIIII',
+            '<64sIIIIIIII',
             self.agent_address.encode('utf-8')[:64].ljust(64, b'\0'),
             self.total_reviews,
             int(self.average_rating * 100),
@@ -68,17 +68,17 @@ class ReputationScoreData:
     @classmethod
     def from_bytes(cls, data: bytes) -> 'ReputationScoreData':
         """Deserialize from bytes"""
-        unpacked = struct.unpack('<64sIIIfffIIII', data)
+        unpacked = struct.unpack('<64sIIIIIIII', data)
         return cls(
             agent_address=unpacked[0].decode('utf-8').rstrip('\0'),
             total_reviews=unpacked[1],
             average_rating=unpacked[2] / 100.0,
-            on_time_percentage=unpacked[4] / 100.0,
-            reputation_score=unpacked[5] / 100.0,
-            positive_votes=unpacked[6],
-            negative_votes=unpacked[7],
-            created_at=unpacked[8],
-            updated_at=unpacked[9],
+            on_time_percentage=unpacked[3] / 100.0,
+            reputation_score=unpacked[4] / 100.0,
+            positive_votes=unpacked[5],
+            negative_votes=unpacked[6],
+            created_at=unpacked[7],
+            updated_at=unpacked[8],
         )
     
     @classmethod
@@ -104,13 +104,13 @@ class ReviewData:
     timestamp: int = 0
     
     def to_bytes(self) -> bytes:
-        """Serialize to bytes"""
+        """Serialize to bytes (10 fields: 4*32s + 4*I + 32s + I)"""
         return struct.pack(
-            '<32s32s32s32sIII32sI',
+            '<32s32s32s32sIIII32sI',
             self.review_id.encode('utf-8')[:32].ljust(32, b'\0'),
             self.provider.encode('utf-8')[:32].ljust(32, b'\0'),
             self.reviewer.encode('utf-8')[:32].ljust(32, b'\0'),
-            b'\0' * 32,  # skill_id placeholder
+            b'\0' * 32,
             self.rating,
             int(self.completed_on_time),
             self.positive_votes,
@@ -122,7 +122,7 @@ class ReviewData:
     @classmethod
     def from_bytes(cls, data: bytes) -> 'ReviewData':
         """Deserialize from bytes"""
-        unpacked = struct.unpack('<32s32s32s32sIII32sI', data)
+        unpacked = struct.unpack('<32s32s32s32sIIII32sI', data)
         return cls(
             review_id=unpacked[0].decode('utf-8').rstrip('\0'),
             provider=unpacked[1].decode('utf-8').rstrip('\0'),
