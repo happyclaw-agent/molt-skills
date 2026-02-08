@@ -6,9 +6,11 @@ Tests only: config presence, optional anchor build/IDL, demo --mock/--help.
 Run with: python3 -m pytest src/tests/unit/test_anchor_deploy.py -v
 """
 
-import pytest
-import subprocess
 import os
+import subprocess
+import sys
+
+import pytest
 
 
 class TestAnchorDeployment:
@@ -76,7 +78,7 @@ class TestDemoMockMode:
     def test_demo_help(self):
         """Verify demo.py --help works"""
         result = subprocess.run(
-            ['python3', 'demo.py', '--help'],
+            [sys.executable, 'demo.py', '--help'],
             capture_output=True,
             text=True,
             timeout=30
@@ -88,7 +90,7 @@ class TestDemoMockMode:
     def test_demo_mock_runs(self):
         """Verify demo.py --mock runs without errors"""
         result = subprocess.run(
-            ['python3', 'demo.py', '--mock'],
+            [sys.executable, 'demo.py', '--mock'],
             capture_output=True,
             text=True,
             timeout=120
@@ -99,7 +101,7 @@ class TestDemoMockMode:
     def test_demo_default_is_mock(self):
         """Verify demo.py defaults to mock mode"""
         result = subprocess.run(
-            ['python3', 'demo.py'],
+            [sys.executable, 'demo.py'],
             capture_output=True,
             text=True,
             timeout=120
@@ -115,7 +117,7 @@ class TestDemoOnchainMode:
     def test_demo_onchain_flag(self):
         """Verify demo.py --onchain flag is recognized"""
         result = subprocess.run(
-            ['python3', 'demo.py', '--onchain', '--help'],
+            [sys.executable, 'demo.py', '--onchain', '--help'],
             capture_output=True,
             text=True,
             timeout=30
@@ -181,7 +183,7 @@ class TestFullDemo:
     def test_full_demo_sections(self):
         """Verify all demo sections execute"""
         result = subprocess.run(
-            ['python3', 'demo.py', '--mock'],
+            [sys.executable, 'demo.py', '--mock'],
             capture_output=True,
             text=True,
             timeout=180
@@ -202,7 +204,7 @@ class TestFullDemo:
     def test_demo_features_count(self):
         """Verify all 8 features are demonstrated"""
         result = subprocess.run(
-            ['python3', 'demo.py', '--mock'],
+            [sys.executable, 'demo.py', '--mock'],
             capture_output=True,
             text=True,
             timeout=180
