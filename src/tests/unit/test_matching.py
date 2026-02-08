@@ -5,7 +5,6 @@ Tests for ML-based agent-skill matching, price prediction, and delivery estimati
 """
 
 import sys
-<<<<<<< HEAD
 import os
 # Add the src directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -15,13 +14,11 @@ import unittest
 import importlib.util
 
 # Import models directly
-=======
 sys.path.insert(0, 'src')
 
 from datetime import datetime, timedelta
 import unittest
 
->>>>>>> main
 from trustyclaw.models.matching import (
     TaskRequirements,
     RenterHistory,
@@ -32,7 +29,6 @@ from trustyclaw.models.matching import (
     DemandForecast,
     ComplexityLevel,
 )
-<<<<<<< HEAD
 
 # Import matching module directly (bypass SDK __init__.py to avoid import issues)
 matching_path = os.path.join(os.path.dirname(__file__), '..', '..', 'trustyclaw', 'sdk', 'matching.py')
@@ -43,9 +39,7 @@ spec.loader.exec_module(matching_module)
 
 MatchingEngine = matching_module.MatchingEngine
 get_matching_engine = matching_module.get_matching_engine
-=======
 from trustyclaw.sdk.matching import MatchingEngine, get_matching_engine
->>>>>>> main
 
 
 class TestMatchingEngine(unittest.TestCase):

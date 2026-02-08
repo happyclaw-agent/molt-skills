@@ -7,7 +7,6 @@ delivery time preferences, and mandate acceptance criteria.
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from datetime import datetime
 from enum import Enum
 from typing import Optional, List, Dict, Any
 
@@ -279,7 +278,6 @@ class NegotiationSession:
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     updated_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     deadline: str = field(default_factory=lambda: (datetime.utcnow() + timedelta(hours=24)).isoformat())
-    deadline: str = field(default_factory=lambda: (datetime.utcnow() + datetime.timedelta(hours=24)).isoformat())
     history: List[Dict] = field(default_factory=list)
     
     def add_counter(

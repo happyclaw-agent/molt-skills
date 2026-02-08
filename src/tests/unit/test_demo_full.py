@@ -6,8 +6,9 @@ Full demo tests - verify all sections can be imported and called without crashin
 import pytest
 import sys
 
-# Mimic demo.py path setup
+# Mimic demo.py path setup - add both src and root for demo imports
 sys.path.insert(0, 'src')
+sys.path.insert(0, '.')
 
 from demo import (
     demo_solana,
