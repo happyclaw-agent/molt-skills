@@ -21,15 +21,15 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Run smoke tests
-        working-directory: ${{ github.workspace }}
+        working-directory: \${{ github.workspace }}
         run: poetry run python scripts/smoke_tests.py
 
       - name: Run simple unit tests
-        working-directory: ${{ github.workspace }}
+        working-directory: \${{ github.workspace }}
         run: poetry run python src/tests/unit/test_simple.py
 
       - name: Verify imports
-        working-directory: ${{ github.workspace }}
+        working-directory: \${{ github.workspace }}
         run: |
           poetry run python -c "
           from trustyclaw.sdk.client import SolanaClient
