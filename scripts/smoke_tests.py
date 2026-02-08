@@ -16,15 +16,18 @@ import sys
 from datetime import datetime
 
 # Add repo src to path (works from any cwd, e.g. GitHub Actions)
+# PYTHONPATH=src is set in CI; ensure src is on path when run as scripts/smoke_tests.py
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 _repo_root = os.path.dirname(_script_dir)
-sys.path.insert(0, os.path.join(_repo_root, "src"))
+_src = os.path.join(_repo_root, "src")
+if _src not in sys.path:
+    sys.path.insert(0, _src)
 
 from trustyclaw.sdk.client import SolanaClient, ClientConfig, Network
 from trustyclaw.sdk.identity import AgentIdentity, IdentityManager, IdentityStatus
 from trustyclaw.sdk.reputation import ReputationEngine, Review
 from trustyclaw.sdk.escrow import (
-    EscrowClient, EscrowTerms, EscrowState, EscrowAccount
+    EscrowClient, EscrowTerms, EscrowState, EscrowAccount,
 )
 
 
@@ -40,6 +43,8 @@ def test_imports():
         return True
     except Exception as e:
         print(f"  ✗ Import failed: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 
@@ -303,6 +308,9 @@ def main():
         return 0
     else:
         print("\n✗ Some tests failed")
+        for i, r in enumerate(results):
+            if not r:
+                print(f"  Failed: result[{i}]")
         return 1
 
 
