@@ -3,10 +3,10 @@
 import pytest
 from pydantic import ValidationError
 
-from src.trustyclaw.core.identity import (
+from trustyclaw.sdk.identity import (
     AgentIdentity,
     IdentityStatus,
-    create_agent_identity,
+    create_identity,
 )
 
 
@@ -15,32 +15,33 @@ class TestAgentIdentity:
 
     def test_create_valid_identity(self):
         """Test creating a valid agent identity"""
-        identity = create_agent_identity(
+        identity = create_identity(
             name="TestAgent",
+            wallet_address="0x1234567890abcdef",
+            public_key="0xabcdef1234567890",
             email="test@example.com",
-            public_key="0x1234567890abcdef",
         )
 
         assert identity.name == "TestAgent"
         assert identity.email == "test@example.com"
-        assert identity.public_key == "0x1234567890abcdef"
         assert identity.status == IdentityStatus.ACTIVE
         assert identity.reputation_score == 0.0
         assert identity.total_rentals == 0
 
     def test_identity_to_dict(self):
         """Test identity serialization"""
-        identity = create_agent_identity(
+        identity = create_identity(
             name="TestAgent",
+            wallet_address="0x1234567890abcdef",
+            public_key="0xabcdef1234567890",
             email="test@example.com",
-            public_key="0x1234567890abcdef",
         )
 
-        data = identity.model_dump()
+        data = identity.__dict__
 
         assert data["name"] == "TestAgent"
         assert data["email"] == "test@example.com"
-        assert data["status"] == "active"
+        assert data["status"] == IdentityStatus.ACTIVE
         assert "created_at" in data
         assert "updated_at" in data
 
@@ -49,12 +50,12 @@ class TestAgentIdentity:
         data = {
             "id": "agent-123",
             "name": "TestAgent",
+            "wallet_address": "0x1234567890abcdef",
+            "public_key": "0xabcdef1234567890",
             "email": "test@example.com",
-            "public_key": "0x1234567890abcdef",
             "status": "active",
             "reputation_score": 85.5,
             "total_rentals": 10,
-            "on_chain_address": "solana-address",
             "created_at": "2026-02-05T00:00:00Z",
             "updated_at": "2026-02-05T00:00:00Z",
         }
@@ -67,10 +68,11 @@ class TestAgentIdentity:
 
     def test_reputation_update(self):
         """Test reputation score updates"""
-        identity = create_agent_identity(
+        identity = create_identity(
             name="TestAgent",
+            wallet_address="0x1234567890abcdef",
+            public_key="0xabcdef1234567890",
             email="test@example.com",
-            public_key="0x1234567890abcdef",
         )
 
         # Simulate reputation update
@@ -82,10 +84,11 @@ class TestAgentIdentity:
 
     def test_identity_status_transitions(self):
         """Test identity status transitions"""
-        identity = create_agent_identity(
+        identity = create_identity(
             name="TestAgent",
+            wallet_address="0x1234567890abcdef",
+            public_key="0xabcdef1234567890",
             email="test@example.com",
-            public_key="0x1234567890abcdef",
         )
 
         # Active by default

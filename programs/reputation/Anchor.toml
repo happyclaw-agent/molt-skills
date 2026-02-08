@@ -1,14 +1,11 @@
 [toolchain]
-channel = "stable"
 
 [provider]
 cluster = "devnet"
 wallet = "~/.config/solana/dev-wallet1.json"
 
 [programs.localnet]
-escrow = "8uBMA8S33eGFMRA677Y1gPvmnBGUjFtdwxf2A8JufpA3"
 reputation = "J9X4dDqyFL2pG3MZJn4WEEK3Mcku9nG8XJcEo8zB9z2"
 
 [programs.devnet]
-escrow = "8uBMA8S33eGFMRA677Y1gPvmnBGUjFtdwxf2A8JufpA3"
 reputation = "J9X4dDqyFL2pG3MZJn4WEEK3Mcku9nG8XJcEo8zB9z2"

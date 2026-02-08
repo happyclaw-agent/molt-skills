@@ -330,11 +330,8 @@ def test_negotiation_sessions():
         session.session_id,
         offerer="client",
         price=900000,
-<<<<<<< HEAD
         duration=7200,
-=======
         duration_seconds=7200,
->>>>>>> main
     )
     
     assert accepted.status == "accepted"
@@ -597,18 +594,15 @@ def test_price_negotiation_rules():
     assert fixed_min == 1000000
     assert fixed_max == 1000000
     
-<<<<<<< HEAD
     # Test counter acceptability (counters 0, 1, 2 are valid with max_counter_offers=3)
     assert rules.is_counter_acceptable(1000000, 950000, 0) is True  # First counter
     assert rules.is_counter_acceptable(1000000, 800000, 0) is False  # Below minimum
     assert rules.is_counter_acceptable(1000000, 950000, 2) is True  # Third counter (valid)
     assert rules.is_counter_acceptable(1000000, 950000, 3) is False  # Fourth counter (too many)
-=======
     # Test counter acceptability
     assert rules.is_counter_acceptable(1000000, 950000, 0) is True  # Within range
     assert rules.is_counter_acceptable(1000000, 800000, 0) is False  # Below minimum
     assert rules.is_counter_acceptable(1000000, 950000, 3) is False  # Too many counters
->>>>>>> main
     
     print("✓ test_price_negotiation_rules passed")
     return True
@@ -619,30 +613,22 @@ def test_delivery_preferences():
     from trustyclaw.models.negotiation import DeliveryPreferences, DeliveryPreference
     
     prefs = DeliveryPreferences(
-<<<<<<< HEAD
         preference=DeliveryPreference.EXPRESS,
-=======
-        preference=DeliveryPreference.STANDARD,
->>>>>>> main
         preferred_duration_seconds=14400,  # 4 hours
         max_duration_seconds=86400,  # 24 hours
         express_multiplier=1.5,
     )
     
-<<<<<<< HEAD
-=======
     # Standard delivery at preferred time
     price, duration = prefs.get_adjusted_price(1000000, 14400)
     assert price == 1000000
     assert duration == 14400
     
->>>>>>> main
     # Express delivery
     express_price, express_duration = prefs.get_adjusted_price(1000000, 14400)
     assert express_price == 1500000  # 1.5x multiplier
     assert express_duration == 14400
     
-<<<<<<< HEAD
     # Test flexible delivery
     flexible_prefs = DeliveryPreferences(
         preference=DeliveryPreference.FLEXIBLE,
@@ -654,8 +640,6 @@ def test_delivery_preferences():
     assert flexible_price == 1000000
     assert flexible_duration == 14400
     
-=======
->>>>>>> main
     print("✓ test_delivery_preferences passed")
     return True
 

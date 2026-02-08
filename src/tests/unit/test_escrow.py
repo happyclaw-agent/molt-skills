@@ -12,7 +12,7 @@ Usage:
 import pytest
 from datetime import datetime, timedelta
 
-from src.trustyclaw.sdk.escrow import (
+from trustyclaw.sdk.escrow import (
     EscrowClient,
     EscrowTerms,
     EscrowState,
