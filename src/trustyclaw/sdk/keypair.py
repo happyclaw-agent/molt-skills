@@ -119,8 +119,8 @@ class KeypairManager:
                     f"Invalid keypair: expected 64 bytes, got {len(secret_key)}"
                 )
             
-            keypair = Keypair.from_secret_key(secret_key)
-            address = str(keypair.publickey)
+            keypair = Keypair.from_bytes(secret_key)
+            address = str(keypair.pubkey())
             
             # Use filename as name if not provided
             if not name:
@@ -199,7 +199,7 @@ class KeypairManager:
             return False
         
         keypair = self._keypairs[address]
-        return str(keypair.publickey) == address
+        return str(keypair.pubkey()) == address
     
     def sign_message(self, address: str, message: bytes) -> bytes:
         """

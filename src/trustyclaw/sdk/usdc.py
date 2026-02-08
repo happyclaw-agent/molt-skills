@@ -104,10 +104,10 @@ class USDCClient:
             keypair_data = f.read()
         
         try:
-            self._keypair = Keypair.from_secret_key(keypair_data)
+            self._keypair = Keypair.from_bytes(keypair_data)
         except Exception:
             secret = base64.b64decode(keypair_data)
-            self._keypair = Keypair.from_secret_key(secret)
+            self._keypair = Keypair.from_bytes(secret)
     
     @property
     def address(self) -> Optional[str]:

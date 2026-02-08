@@ -67,6 +67,8 @@ transfer = usdc.transfer(from_addr, to_addr, amount)
 
 ## Escrow Program (On-Chain)
 
+On-chain escrow states are **Created → Funded → Completed** (or **Cancelled**). Dispute resolution is planned for a future release.
+
 TrustyClaw includes a production-grade **Anchor escrow program** for secure USDC payments.
 
 ### Quick Deploy to Devnet

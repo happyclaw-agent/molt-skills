@@ -77,16 +77,16 @@ class SolanaRPCClient:
             keypair_data = f.read()
         
         try:
-            self._keypair = Keypair.from_secret_key(keypair_data)
+            self._keypair = Keypair.from_bytes(keypair_data)
         except Exception:
             secret = base64.b64decode(keypair_data)
-            self._keypair = Keypair.from_secret_key(secret)
+            self._keypair = Keypair.from_bytes(secret)
     
     @property
     def address(self) -> Optional[str]:
         """Get loaded keypair address"""
         if self._keypair:
-            return str(self._keypair.publickey)
+            return str(self._keypair.pubkey())
         return None
     
     def get_balance(self, address: str) -> WalletInfo:
@@ -139,15 +139,17 @@ class SolanaRPCClient:
         return None
     
     def derive_escrow_pda(self, provider: str, skill_id: str) -> str:
-        """Derive a PDA for an escrow account"""
-        provider_bytes = bytes.fromhex(provider[::2])[:32]
+        """Derive a PDA for an escrow account (provider is base58 pubkey string)."""
+        provider_pubkey = Pubkey.from_string(provider)
+        provider_bytes = bytes(provider_pubkey)
         seed_bytes = skill_id.encode()[:32]
-        
-        program_id = PublicKey.find_program_address(
+        program_id_str = os.environ.get("ESCROW_PROGRAM_ID", "11111111111111111111111111111111")
+        program_pubkey = Pubkey.from_string(program_id_str)
+        pda, _bump = Pubkey.find_program_address(
             [self.ESCROW_SEED.encode(), provider_bytes, seed_bytes],
-            PublicKey(self.USDC_MINT),
+            program_pubkey,
         )
-        return str(program_id[0])
+        return str(pda)
     
     def get_recent_blockhash(self) -> str:
         """Get recent blockhash for transaction building"""

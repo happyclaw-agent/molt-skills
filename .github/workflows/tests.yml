@@ -3,8 +3,8 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  smoke-test:
-    name: smoke-test
+  test:
+    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,19 +20,13 @@ jobs:
           .venv/bin/pip install --upgrade pip
           .venv/bin/pip install -r requirements.txt
 
-      - name: Run smoke tests
+      - name: Run full unit test suite
         working-directory: ${{ github.workspace }}
         env:
           PYTHONPATH: src
-        run: .venv/bin/python scripts/smoke_tests.py
+        run: .venv/bin/python -m pytest src/tests/unit -v --tb=short
 
-      - name: Run simple unit tests
-        working-directory: ${{ github.workspace }}
-        env:
-          PYTHONPATH: src
-        run: .venv/bin/python src/tests/unit/test_simple.py
-
-      - name: Verify imports
+      - name: Verify SDK imports
         working-directory: ${{ github.workspace }}
         env:
           PYTHONPATH: src
@@ -44,3 +38,15 @@ jobs:
           from trustyclaw.sdk.escrow import EscrowClient
           print('All imports successful')
           "
+
+      - name: Run smoke tests
+        working-directory: ${{ github.workspace }}
+        env:
+          PYTHONPATH: src
+        run: .venv/bin/python scripts/smoke_tests.py
+
+      - name: Run demo (mock mode only)
+        working-directory: ${{ github.workspace }}
+        env:
+          PYTHONPATH: src
+        run: .venv/bin/python demo.py --mock

@@ -763,10 +763,13 @@ class DiscoverySkill:
         return json.dumps([s.to_dict() for s in skills], indent=2)
 
 
-def get_discovery_skill() -> DiscoverySkill:
+def get_discovery_skill(mock: bool = False) -> DiscoverySkill:
     """
     Get a DiscoverySkill instance.
-    
+
+    Args:
+        mock: If True, use in-memory behavior (no chain). Default False.
+
     Returns:
         Configured DiscoverySkill
     """
