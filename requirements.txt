@@ -1,8 +1,8 @@
 # Core SDK dependencies (for CI and pip users)
 # Keep in sync with [tool.poetry.dependencies] in pyproject.toml
+# Note: spl.token is part of the solana package, not a separate PyPI package
 solana>=0.35,<0.37
 solders>=0.21.0
-spl-token>=0.5.0
 pydantic>=2.5.0
 PyYAML>=6.0
 requests>=2.31.0
